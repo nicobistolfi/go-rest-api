@@ -1,0 +1,32 @@
+service: go-102
+frameworkVersion: ^3.0.0
+
+plugins:
+  - serverless-offline
+  - serverless-go-plugin
+
+provider:
+  name: aws
+  architecture: arm64
+  runtime: provided.al2
+  region: us-west-1
+  stage: local
+
+custom:
+  go:
+    supportedRuntimes: provided.al2
+    buildProvidedRuntimeAsBootstrap: true
+    cmd: GOARCH=arm64 GOOS=linux go build -tags lambda.norpc -ldflags="-s -w"
+
+package:
+  patterns:
+    - '!./**'
+    - './bin/**'
+
+functions:
+  main:
+    handler: ./handlers/main.go
+    events:
+      - http:
+          path: /{proxy+}
+          method: ANY
