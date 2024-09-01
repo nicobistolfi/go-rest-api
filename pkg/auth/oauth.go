@@ -38,12 +38,6 @@ func ValidateOAuthToken(ctx context.Context, token string, cfg *config.Config) (
 		return nil, errors.New("OIDC provider not initialized")
 	}
 
-	verifier := oidcProvider.Verifier(&oidc.Config{ClientID: cfg.OAuthClientID})
-	_, err := verifier.Verify(ctx, token)
-	if err != nil {
-		return nil, err
-	}
-
 	oauth2Token := &oauth2.Token{AccessToken: token}
 	userInfo, err := oidcProvider.UserInfo(ctx, oauth2.StaticTokenSource(oauth2Token))
 	if err != nil {
