@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: go-rest-api-config
+data:
+  GIN_MODE: "release"
+  # Add other environment variables as needed
