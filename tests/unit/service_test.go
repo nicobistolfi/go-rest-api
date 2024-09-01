@@ -6,22 +6,41 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"go-boilerplate/internal/api/handlers"
+	"go-boilerplate/internal/api"
+	"go-boilerplate/internal/config"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 )
 
-func TestPingHandler(t *testing.T) {
-	// Set Gin to Test Mode
+func setupTestRouter() *gin.Engine {
 	gin.SetMode(gin.TestMode)
+	cfg := &config.Config{
+		JWTSecret:   "test_secret",
+		ValidAPIKey: "test_api_key",
+	}
+	logger, _ := zap.NewDevelopment()
 
+	r := gin.New()
+
+	// Add the config and logger to the gin.Context
+	r.Use(func(c *gin.Context) {
+		c.Set("config", cfg)
+		c.Set("logger", logger)
+		c.Next()
+	})
+
+	api.SetupRouter(r, cfg, logger)
+	return r
+}
+
+func TestPingHandler(t *testing.T) {
 	// Setup the router
-	r := gin.Default()
-	r.GET("/ping", handlers.PingHandler)
+	r := setupTestRouter()
 
 	// Create a mock request to the /ping endpoint
-	req, err := http.NewRequest(http.MethodGet, "/ping", nil)
+	req, err := http.NewRequest(http.MethodGet, "/api/v1/ping", nil)
 	assert.NoError(t, err)
 
 	// Create a response recorder
@@ -40,4 +59,30 @@ func TestPingHandler(t *testing.T) {
 
 	// Assert the response body
 	assert.Equal(t, "pong", response["message"])
+}
+
+func TestHealthCheckHandler(t *testing.T) {
+	// Setup the router
+	r := setupTestRouter()
+
+	// Create a mock request to the /health endpoint
+	req, err := http.NewRequest(http.MethodGet, "/api/v1/health", nil)
+	assert.NoError(t, err)
+
+	// Create a response recorder
+	w := httptest.NewRecorder()
+
+	// Perform the request
+	r.ServeHTTP(w, req)
+
+	// Assert the status code
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	// Parse the response body
+	var response map[string]string
+	err = json.Unmarshal(w.Body.Bytes(), &response)
+	assert.NoError(t, err)
+
+	// Assert the response body
+	assert.Equal(t, "OK", response["status"])
 }
