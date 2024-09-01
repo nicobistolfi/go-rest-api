@@ -34,7 +34,7 @@ func GenerateJWTToken(userID, email string, secret string, expirationTime time.D
 		UserID: userID,
 		Email:  email,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expirationTime)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expirationTime * time.Second)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
