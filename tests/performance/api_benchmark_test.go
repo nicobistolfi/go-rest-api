@@ -1,24 +1,20 @@
 package performance
 
 import (
+	"go-boilerplate/internal/api"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
 
-func BenchmarkAPIEndpoint(b *testing.B) {
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Implement actual API handler
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"message": "Hello, World!"}`))
-	})
-
-	server := httptest.NewServer(handler)
+func BenchmarkPingEndpoint(b *testing.B) {
+	router := api.SetupRouter()
+	server := httptest.NewServer(router)
 	defer server.Close()
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		resp, err := http.Get(server.URL)
+		resp, err := http.Get(server.URL + "/ping")
 		if err != nil {
 			b.Fatalf("Failed to make request: %v", err)
 		}

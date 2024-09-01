@@ -1,44 +1,95 @@
 package e2e
 
 import (
+	"encoding/json"
+	"go-boilerplate/internal/api"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAPIFlow(t *testing.T) {
-	// TODO: Implement actual API handlers and flow
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"message": "Success"}`))
-	})
+	// Setup the router
+	router := api.SetupRouter()
 
-	server := httptest.NewServer(handler)
+	// Create a test HTTP server
+	server := httptest.NewServer(router)
 	defer server.Close()
 
-	// Step 1: User Authentication
-	// TODO: Implement authentication test
+	// Step 1: Ping
+	t.Run("Ping", func(t *testing.T) {
+		resp, err := http.Get(server.URL + "/ping")
+		assert.NoError(t, err)
+		defer resp.Body.Close()
 
-	// Step 2: Create Resource
-	// TODO: Implement resource creation test
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-	// Step 3: Retrieve Resource
-	// TODO: Implement resource retrieval test
+		var response map[string]string
+		err = json.NewDecoder(resp.Body).Decode(&response)
+		assert.NoError(t, err)
+		assert.Equal(t, "pong", response["message"])
+	})
 
-	// Step 4: Update Resource
-	// TODO: Implement resource update test
+	/*
+		// Step 2: Create Resource
+		t.Run("Create Resource", func(t *testing.T) {
+			payload := []byte(`{"name": "Test Resource"}`)
+			resp, err := http.Post(server.URL+"/resources", "application/json", bytes.NewBuffer(payload))
+			assert.NoError(t, err)
+			defer resp.Body.Close()
 
-	// Step 5: Delete Resource
-	// TODO: Implement resource deletion test
+			assert.Equal(t, http.StatusCreated, resp.StatusCode)
 
-	// Final check
-	resp, err := http.Get(server.URL)
-	if err != nil {
-		t.Fatalf("Failed to make request: %v", err)
-	}
-	defer resp.Body.Close()
+			var response map[string]interface{}
+			err = json.NewDecoder(resp.Body).Decode(&response)
+			assert.NoError(t, err)
+			assert.Equal(t, "Test Resource", response["name"])
+			assert.NotEmpty(t, response["id"])
+		})
 
-	if resp.StatusCode != http.StatusOK {
-		t.Errorf("Expected status OK; got %v", resp.Status)
-	}
+		// Step 3: Retrieve Resource
+		var resourceID string
+		t.Run("Retrieve Resource", func(t *testing.T) {
+			resp, err := http.Get(server.URL + "/resources/1")
+			assert.NoError(t, err)
+			defer resp.Body.Close()
+
+			assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+			var response map[string]interface{}
+			err = json.NewDecoder(resp.Body).Decode(&response)
+			assert.NoError(t, err)
+			assert.Equal(t, "Test Resource", response["name"])
+			resourceID = response["id"].(string)
+		})
+
+		// Step 4: Update Resource
+		t.Run("Update Resource", func(t *testing.T) {
+			payload := []byte(`{"name": "Updated Test Resource"}`)
+			req, _ := http.NewRequest(http.MethodPut, server.URL+"/resources/"+resourceID, bytes.NewBuffer(payload))
+			req.Header.Set("Content-Type", "application/json")
+			resp, err := http.DefaultClient.Do(req)
+			assert.NoError(t, err)
+			defer resp.Body.Close()
+
+			assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+			var response map[string]interface{}
+			err = json.NewDecoder(resp.Body).Decode(&response)
+			assert.NoError(t, err)
+			assert.Equal(t, "Updated Test Resource", response["name"])
+		})
+
+		// Step 5: Delete Resource
+		t.Run("Delete Resource", func(t *testing.T) {
+			req, _ := http.NewRequest(http.MethodDelete, server.URL+"/resources/"+resourceID, nil)
+			resp, err := http.DefaultClient.Do(req)
+			assert.NoError(t, err)
+			defer resp.Body.Close()
+
+			assert.Equal(t, http.StatusNoContent, resp.StatusCode)
+		})
+	*/
 }

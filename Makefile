@@ -82,6 +82,10 @@ test-security:
 test-e2e:
 	go test ./tests/e2e
 
+## test-contract: Run contract tests
+test-contract:
+	go test ./tests/contract
+
 ## test-all: Run all tests
 test-all: test-unit test-integration test-performance test-security test-e2e
 
