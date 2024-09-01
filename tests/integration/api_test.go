@@ -3,20 +3,32 @@ package integration
 import (
 	"encoding/json"
 	"go-boilerplate/internal/api"
+	"go-boilerplate/internal/config"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 )
 
 func TestAPIEndpoints(t *testing.T) {
 	// Setup the router
-	router := api.SetupRouter()
+	// Setup the router
+	cfg, err := config.LoadConfig()
+	assert.NoError(t, err, "Failed to load configuration")
+
+	logger, err := zap.NewProduction()
+	assert.NoError(t, err, "Failed to initialize logger")
+	defer logger.Sync()
+
+	r := gin.New()
+	api.SetupRouter(r, cfg, logger)
 
 	// Create a test HTTP server
-	server := httptest.NewServer(router)
+	server := httptest.NewServer(r)
 	defer server.Close()
 
 	// Test cases
@@ -28,7 +40,7 @@ func TestAPIEndpoints(t *testing.T) {
 	}{
 		{
 			name:           "Ping Endpoint",
-			endpoint:       "/ping",
+			endpoint:       "/api/v1/ping",
 			expectedStatus: http.StatusOK,
 			expectedBody:   map[string]string{"message": "pong"},
 		},
