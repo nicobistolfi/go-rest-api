@@ -185,3 +185,25 @@ Please read CONTRIBUTING.md for details on our code of conduct and the process f
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Testing
+
+This project employs a comprehensive testing strategy to ensure reliability, performance, and security. For detailed information on our testing approach, please refer to the following documentation:
+
+- [Testing Strategy](docs/docs/tests/testing-strategy.md)
+- [Unit Testing](docs/docs/tests/unit-testing.md)
+- [Integration Testing](docs/docs/tests/integration-testing.md)
+- [Performance Testing](docs/docs/tests/performance-testing.md)
+- [Security Testing](docs/docs/tests/security-testing.md)
+- [End-to-End Testing](docs/docs/tests/e2e-testing.md)
+
+To run the tests, you can use the following make commands:
+
+- Run unit tests: `make test-unit`
+- Run integration tests: `make test-integration`
+- Run performance tests: `make test-performance`
+- Run security tests: `make test-security`
+- Run end-to-end tests: `make test-e2e`
+- Run all tests: `make test-all`
+
+For more information on these commands, refer to the Makefile in the root directory of the project.

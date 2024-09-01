@@ -1,6 +1,8 @@
 package api
 
 import (
+	"go-boilerplate/internal/api/handlers"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -8,11 +10,7 @@ import (
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
 
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
+	r.GET("/ping", handlers.PingHandler)
 
 	// Add more routes here as needed
 
