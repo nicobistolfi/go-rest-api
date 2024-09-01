@@ -1,3 +1,7 @@
+---
+sidebar_position: 1
+---
+
 # Go API Project Structure
 
 This repository contains a structured Go project for developing a robust and scalable API. The project is organized to promote clean architecture, separation of concerns, and ease of testing and deployment.
@@ -25,13 +29,14 @@ go-boilerplate/
 │   └── unit/
 ├── deployments/
 │   ├── docker/
-│   └── kubernetes/
+│   ├── kubernetes/
+│   └── serverless/
 ├── docs/
 ├── .gitignore
 ├── go.mod
 ├── go.sum
 ├── Makefile
-├─ LICENSE
+├── LICENSE
 └── README.md
 ```
 
@@ -71,42 +76,10 @@ Configuration files and scripts for deploying the application.
 
 - `docker/`: Dockerfile and related configurations for containerization.
 - `kubernetes/`: Kubernetes manifests for orchestration.
+- `serverless/`: Serverless configuration files for cloud function deployment.
 
 #### `docs/`
-Project documentation, API specifications, and any other relevant documentation. This directory contains a Docusaurus project for easy-to-navigate and visually appealing documentation.
-
-To run and view the documentation locally:
-
-1. Navigate to the `docs/` directory:
-   ```
-   cd docs
-   ```
-
-2. Install the necessary dependencies:
-   ```
-   npm install
-   ```
-
-3. Start the Docusaurus development server:
-   ```
-   npm run start
-   ```
-
-4. Open your web browser and visit `http://localhost:3000` to view the documentation.
-
-The documentation includes:
-- API specifications
-- Getting started guide
-- Architecture overview
-- Deployment instructions
-- Contributing guidelines
-
-To build the documentation for production:
-```
-npm run build
-```
-
-This will generate static content in the `build` directory, which can be served using any static content hosting service.
+Project documentation, API specifications, and any other relevant documentation.
 
 #### Root Files
 - `.gitignore`: Specifies intentionally untracked files to ignore.
@@ -136,7 +109,45 @@ This will generate static content in the `build` directory, which can be served 
 
 ## Deployment
 
-Refer to the `deployments/` directory for Docker and Kubernetes configurations. Ensure to update these as the application evolves.
+This project supports multiple deployment options:
+
+### Docker
+
+Refer to the `deployments/docker/` directory for Docker configurations. To build and run the Docker container:
+
+1. Build the Docker image:
+   ```
+   docker build -t go-rest-api -f deployments/docker/Dockerfile .
+   ```
+2. Run the container:
+   ```
+   docker run -p 8080:8080 go-rest-api
+   ```
+
+### Kubernetes
+
+Kubernetes manifests are available in the `deployments/kubernetes/` directory. To deploy to a Kubernetes cluster:
+
+1. Apply the manifests:
+   ```
+   kubectl apply -f deployments/kubernetes/
+   ```
+
+### Serverless
+
+For serverless deployment, we use the Serverless Framework. Configuration files are located in the `deployments/serverless/` directory.
+
+1. Install the Serverless Framework:
+   ```
+   npm install -g serverless
+   ```
+2. Deploy the application:
+   ```
+   cd deployments/serverless
+   serverless deploy
+   ```
+
+Ensure to update these configurations as the application evolves. For more detailed deployment instructions, refer to the respective README files in each deployment directory.
 
 ## Contributing
 
