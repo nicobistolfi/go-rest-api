@@ -62,4 +62,27 @@ docker/run:
 help:
 	@grep -h -E '^[a-zA-Z_/-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-.PHONY: build run clean test test/coverage dep lint docker/build docker/run help
+## test-unit: Run unit tests
+test-unit:
+	go test ./tests/unit
+
+## test-integration: Run integration tests
+test-integration:
+	go test ./tests/integration
+
+## test-performance: Run performance tests
+test-performance:
+	go test -bench=. ./tests/performance
+
+## test-security: Run security tests
+test-security:
+	go test ./tests/security
+
+## test-e2e: Run end-to-end tests
+test-e2e:
+	go test ./tests/e2e
+
+## test-all: Run all tests
+test-all: test-unit test-integration test-performance test-security test-e2e
+
+.PHONY: build run clean test test/coverage dep lint docker/build docker/run help test-unit test-integration test-performance test-security test-e2e test-all
