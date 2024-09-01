@@ -25,7 +25,8 @@ go-boilerplate/
 │   └── unit/
 ├── deployments/
 │   ├── docker/
-│   └── kubernetes/
+│   ├── kubernetes/
+│   └── serverless/
 ├── docs/
 ├── .gitignore
 ├── go.mod
@@ -71,6 +72,7 @@ Configuration files and scripts for deploying the application.
 
 - `docker/`: Dockerfile and related configurations for containerization.
 - `kubernetes/`: Kubernetes manifests for orchestration.
+- `serverless/`: Serverless configuration files for cloud function deployment.
 
 #### `docs/`
 Project documentation, API specifications, and any other relevant documentation.
@@ -103,7 +105,45 @@ Project documentation, API specifications, and any other relevant documentation.
 
 ## Deployment
 
-Refer to the `deployments/` directory for Docker and Kubernetes configurations. Ensure to update these as the application evolves.
+This project supports multiple deployment options:
+
+### Docker
+
+Refer to the `deployments/docker/` directory for Docker configurations. To build and run the Docker container:
+
+1. Build the Docker image:
+   ```
+   docker build -t go-rest-api -f deployments/docker/Dockerfile .
+   ```
+2. Run the container:
+   ```
+   docker run -p 8080:8080 go-rest-api
+   ```
+
+### Kubernetes
+
+Kubernetes manifests are available in the `deployments/kubernetes/` directory. To deploy to a Kubernetes cluster:
+
+1. Apply the manifests:
+   ```
+   kubectl apply -f deployments/kubernetes/
+   ```
+
+### Serverless
+
+For serverless deployment, we use the Serverless Framework. Configuration files are located in the `deployments/serverless/` directory.
+
+1. Install the Serverless Framework:
+   ```
+   npm install -g serverless
+   ```
+2. Deploy the application:
+   ```
+   cd deployments/serverless
+   serverless deploy
+   ```
+
+Ensure to update these configurations as the application evolves. For more detailed deployment instructions, refer to the respective README files in each deployment directory.
 
 ## Contributing
 

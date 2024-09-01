@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-rest-api
+  labels:
+    app: go-rest-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: go-rest-api
+  template:
+    metadata:
+      labels:
+        app: go-rest-api
+    spec:
+      containers:
+      - name: go-rest-api
+        image: go-rest-api:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8080
+        envFrom:
+        - configMapRef:
+            name: go-rest-api-config
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 250m
+            memory: 256Mi

@@ -1,4 +1,4 @@
-service: go-102
+service: go-boilerplate
 frameworkVersion: ^3.0.0
 
 plugins:
@@ -9,8 +9,11 @@ provider:
   name: aws
   architecture: arm64
   runtime: provided.al2
-  region: us-west-1
-  stage: local
+  region: ${opt:region, 'us-west-1'}
+  stage: ${opt:stage, 'dev'}
+  tracing:
+    apiGateway: true
+    lambda: true
 
 custom:
   go:
