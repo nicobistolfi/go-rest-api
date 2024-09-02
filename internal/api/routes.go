@@ -11,27 +11,57 @@ import (
 	"golang.org/x/time/rate"
 )
 
-func SetupRouter(r *gin.Engine, cfg *config.Config, logger *zap.Logger) {
+type RouterOption func(*routerOptions)
+
+type routerOptions struct {
+	skipRateLimiting bool
+}
+
+func WithoutRateLimiting() RouterOption {
+	return func(ro *routerOptions) {
+		ro.skipRateLimiting = true
+	}
+}
+
+func SetupRouter(router *gin.Engine, cfg *config.Config, logger *zap.Logger, opts ...RouterOption) {
+	options := &routerOptions{}
+	for _, opt := range opts {
+		opt(options)
+	}
+
 	// Add global middleware
-	r.Use(gin.Recovery())
-	r.Use(middleware.CORSMiddleware())
-	r.Use(middleware.LoggerMiddleware(logger))
-	r.Use(middleware.RateLimiter(rate.Every(time.Second), 10)) // 10 requests per second
+	router.Use(gin.Recovery())
+	router.Use(middleware.CORSMiddleware())
+	router.Use(middleware.LoggerMiddleware(logger))
+
+	if options.skipRateLimiting {
+		// Apply rate limiting middleware
+		logger.Info("Rate limiting is disabled")
+	} else {
+		// Apply rate limiting middleware
+		router.Use(middleware.RateLimiter(rate.Every(time.Second), 10)) // 10 requests per second
+	}
 
 	// Public routes
-	public := r.Group("/api/v1")
+	public := router.Group("/api/v1")
 	{
 		public.GET("/health", HealthCheck)
 		public.GET("/ping", Ping)
+		public.POST("/register", Register)
 		// Add other public routes
 	}
 
+	// Auth routes
+	auth := router.Group("/api/v1")
+	{
+		auth.POST("/token", GetToken)
+	}
+
 	// Protected routes
-	protected := r.Group("/api/v1")
+	protected := router.Group("/api/v1")
 	protected.Use(middleware.AuthMiddleware())
 	protected.Use(middleware.VerifyToken())
 	{
 		protected.GET("/profile", GetProfile)
-		// Add other protected routes
 	}
 }

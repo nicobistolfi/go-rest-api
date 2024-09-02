@@ -2,19 +2,53 @@ package middleware
 
 import (
 	"net/http"
+	"sync"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 	"golang.org/x/time/rate"
 )
 
 func RateLimiter(r rate.Limit, b int) gin.HandlerFunc {
-	limiter := rate.NewLimiter(r, b)
+	type client struct {
+		limiter  *rate.Limiter
+		lastSeen int64
+	}
+
+	var (
+		mu      sync.Mutex
+		clients = make(map[string]*client)
+	)
+
 	return func(c *gin.Context) {
-		if !limiter.Allow() {
-			c.JSON(http.StatusTooManyRequests, gin.H{"error": "Rate limit exceeded"})
-			c.Abort()
+		// Use only IP if Authorization header is empty
+		key := c.ClientIP()
+		if auth := c.GetHeader("Authorization"); auth != "" {
+			key += ":" + auth
+		}
+
+		mu.Lock()
+		if _, found := clients[key]; !found {
+			clients[key] = &client{limiter: rate.NewLimiter(r, b)}
+		}
+		if !clients[key].limiter.Allow() {
+			mu.Unlock()
+			// Log the rate limit exceeded event
+			authHeader := c.GetHeader("Authorization")
+			maskedAuth := "No Authorization"
+			if authHeader != "" {
+				maskedAuth = "Bearer *****"
+				if len(authHeader) > 15 {
+					maskedAuth = authHeader[:15] + "*****"
+				}
+			}
+			logger.Info("Rate limit exceeded",
+				zap.String("client_ip", c.ClientIP()),
+				zap.String("authorization", maskedAuth))
+			c.AbortWithStatus(http.StatusTooManyRequests)
 			return
 		}
+		mu.Unlock()
 		c.Next()
 	}
 }
