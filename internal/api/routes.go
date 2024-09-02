@@ -14,6 +14,7 @@ import (
 func SetupRouter(r *gin.Engine, cfg *config.Config, logger *zap.Logger) {
 	// Add global middleware
 	r.Use(gin.Recovery())
+	r.Use(middleware.CORSMiddleware())
 	r.Use(middleware.LoggerMiddleware(logger))
 	r.Use(middleware.RateLimiter(rate.Every(time.Second), 10)) // 10 requests per second
 
@@ -26,7 +27,7 @@ func SetupRouter(r *gin.Engine, cfg *config.Config, logger *zap.Logger) {
 	}
 
 	// Protected routes
-	protected := r.Group("/")
+	protected := r.Group("/api/v1")
 	protected.Use(middleware.AuthMiddleware())
 	protected.Use(middleware.VerifyToken())
 	{

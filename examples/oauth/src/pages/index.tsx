@@ -10,7 +10,7 @@ export default function Home() {
   const makeAuthenticatedRequest = async () => {
     if (session && session.accessToken) {
       try {
-        const response = await axios.get("http://localhost:8080/profile", {
+        const response = await axios.get("http://localhost:8080/api/v1/profile", {
           headers: {
             Authorization: `Bearer ${session.accessToken}`,
           },

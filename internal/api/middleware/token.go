@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -26,13 +25,31 @@ type Profile struct {
 
 func VerifyToken() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		authHeader := c.GetHeader("Authorization")
-		token := strings.TrimPrefix(authHeader, "Bearer ")
+		// Get the token from the context set by AuthMiddleware
+		token, exists := c.Get("auth_token")
+		authHeader, authHeaderExists := c.Get("auth_header")
+
+		if !authHeaderExists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication header is missing"})
+			c.Abort()
+			return
+		}
+
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication token is missing"})
+			c.Abort()
+			return
+		}
+
+		tokenString, ok := token.(string)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid token format"})
+			c.Abort()
+			return
+		}
 
 		tokenURL := os.Getenv("TOKEN_URL")
 
-		fmt.Println("tokenURL", tokenURL)
-		fmt.Println("token", token)
 		if tokenURL == "" {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "TOKEN_URL not set"})
 			c.Abort()
@@ -46,7 +63,7 @@ func VerifyToken() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		req.Header.Set("Authorization", "Bearer "+token)
+		req.Header.Set(authHeader.(string), tokenString)
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
@@ -70,8 +87,6 @@ func VerifyToken() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-
-		fmt.Println("body", string(body))
 
 		var profile Profile
 		if err := json.Unmarshal(body, &profile); err != nil {
