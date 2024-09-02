@@ -75,8 +75,8 @@ test-performance:
 	go test -bench=. ./tests/performance
 
 ## test-security: Run security tests
-# test-security:
-# 	go test ./tests/security
+test-security:
+	go test ./tests/security
 
 ## test-e2e: Run end-to-end tests
 test-e2e:
