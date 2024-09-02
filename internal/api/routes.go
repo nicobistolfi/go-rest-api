@@ -25,27 +25,12 @@ func SetupRouter(r *gin.Engine, cfg *config.Config, logger *zap.Logger) {
 		// Add other public routes
 	}
 
-	// OAuth protected routes
-	oauth := r.Group("/api/v1/oauth")
-	oauth.Use(middleware.OAuthMiddleware())
+	// Protected routes
+	protected := r.Group("/")
+	protected.Use(middleware.AuthMiddleware())
+	protected.Use(middleware.VerifyToken())
 	{
-		oauth.GET("/profile", GetProfile)
-		// Add other OAuth protected routes
-	}
-
-	// JWT protected routes
-	jwt := r.Group("/api/v1/jwt")
-	jwt.Use(middleware.JWTMiddleware())
-	{
-		jwt.GET("/profile", GetProfile)
-		// Add other JWT protected routes
-	}
-
-	// API Key protected routes
-	apiKey := r.Group("/api/v1/apikey")
-	apiKey.Use(middleware.APIKeyMiddleware())
-	{
-		apiKey.GET("/profile", GetProfile)
-		// Add other API Key protected routes
+		protected.GET("/profile", GetProfile)
+		// Add other protected routes
 	}
 }

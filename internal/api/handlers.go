@@ -3,10 +3,8 @@ package api
 import (
 	"net/http"
 
-	"go-boilerplate/internal/models"
-	"go-boilerplate/pkg/auth" // Adjust this import path as needed
+	// Adjust this import path as needed
 
-	"github.com/coreos/go-oidc"
 	"github.com/gin-gonic/gin"
 )
 
@@ -26,34 +24,7 @@ func GetProfile(c *gin.Context) {
 		return
 	}
 
-	var profile ProfileResponse
-
-	// Determine the type of user and populate the profile accordingly
-	switch u := user.(type) {
-	case *oidc.UserInfo: // OAuth user
-		profile = ProfileResponse{
-			ID:    u.Subject,
-			Email: u.Email,
-			Name:  u.Profile,
-		}
-	case *auth.Claims: // JWT user
-		profile = ProfileResponse{
-			ID:    u.UserID,
-			Email: u.Email,
-			Name:  "JWT User", // You might want to store and retrieve the name in your JWT claims
-		}
-	case *models.User: // API Key user
-		profile = ProfileResponse{
-			ID:    u.ID,
-			Email: u.Email,
-			Name:  u.Name,
-		}
-	default: // Unknown type
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unknown user type"})
-		return
-	}
-
-	c.JSON(http.StatusOK, profile)
+	c.JSON(http.StatusOK, user)
 }
 
 // HealthCheck handles the /health endpoint
