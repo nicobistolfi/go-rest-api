@@ -2,11 +2,10 @@ package api
 
 import (
 	"net/http"
+	"os"
 
-	"go-boilerplate/internal/models"
 	"go-boilerplate/pkg/auth" // Adjust this import path as needed
 
-	"github.com/coreos/go-oidc"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,6 +14,19 @@ type ProfileResponse struct {
 	ID    string `json:"id"`
 	Email string `json:"email"`
 	Name  string `json:"name"`
+}
+
+func GetToken(c *gin.Context) {
+	secretKey := []byte(os.Getenv("JWT_SECRET")) // Replace with a secure secret key
+	token, err := auth.GenerateJWT(secretKey)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"token": token,
+	})
 }
 
 // GetProfile handles the /profile endpoint
@@ -26,34 +38,7 @@ func GetProfile(c *gin.Context) {
 		return
 	}
 
-	var profile ProfileResponse
-
-	// Determine the type of user and populate the profile accordingly
-	switch u := user.(type) {
-	case *oidc.UserInfo: // OAuth user
-		profile = ProfileResponse{
-			ID:    u.Subject,
-			Email: u.Email,
-			Name:  u.Profile,
-		}
-	case *auth.Claims: // JWT user
-		profile = ProfileResponse{
-			ID:    u.UserID,
-			Email: u.Email,
-			Name:  "JWT User", // You might want to store and retrieve the name in your JWT claims
-		}
-	case *models.User: // API Key user
-		profile = ProfileResponse{
-			ID:    u.ID,
-			Email: u.Email,
-			Name:  u.Name,
-		}
-	default: // Unknown type
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unknown user type"})
-		return
-	}
-
-	c.JSON(http.StatusOK, profile)
+	c.JSON(http.StatusOK, user)
 }
 
 // HealthCheck handles the /health endpoint
@@ -67,5 +52,13 @@ func HealthCheck(c *gin.Context) {
 func Ping(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "pong",
+	})
+}
+
+// Register handles the /register endpoint
+func Register(c *gin.Context) {
+	// TODO: Implement user registration logic
+	c.JSON(http.StatusOK, gin.H{
+		"message": "User registered successfully",
 	})
 }

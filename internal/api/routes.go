@@ -11,41 +11,57 @@ import (
 	"golang.org/x/time/rate"
 )
 
-func SetupRouter(r *gin.Engine, cfg *config.Config, logger *zap.Logger) {
+type RouterOption func(*routerOptions)
+
+type routerOptions struct {
+	skipRateLimiting bool
+}
+
+func WithoutRateLimiting() RouterOption {
+	return func(ro *routerOptions) {
+		ro.skipRateLimiting = true
+	}
+}
+
+func SetupRouter(router *gin.Engine, cfg *config.Config, logger *zap.Logger, opts ...RouterOption) {
+	options := &routerOptions{}
+	for _, opt := range opts {
+		opt(options)
+	}
+
 	// Add global middleware
-	r.Use(gin.Recovery())
-	r.Use(middleware.LoggerMiddleware(logger))
-	r.Use(middleware.RateLimiter(rate.Every(time.Second), 10)) // 10 requests per second
+	router.Use(gin.Recovery())
+	router.Use(middleware.CORSMiddleware())
+	router.Use(middleware.LoggerMiddleware(logger))
+
+	if options.skipRateLimiting {
+		// Apply rate limiting middleware
+		logger.Info("Rate limiting is disabled")
+	} else {
+		// Apply rate limiting middleware
+		router.Use(middleware.RateLimiter(rate.Every(time.Second), 10)) // 10 requests per second
+	}
 
 	// Public routes
-	public := r.Group("/api/v1")
+	public := router.Group("/api/v1")
 	{
 		public.GET("/health", HealthCheck)
 		public.GET("/ping", Ping)
+		public.POST("/register", Register)
 		// Add other public routes
 	}
 
-	// OAuth protected routes
-	oauth := r.Group("/api/v1/oauth")
-	oauth.Use(middleware.OAuthMiddleware())
+	// Auth routes
+	auth := router.Group("/api/v1")
 	{
-		oauth.GET("/profile", GetProfile)
-		// Add other OAuth protected routes
+		auth.POST("/token", GetToken)
 	}
 
-	// JWT protected routes
-	jwt := r.Group("/api/v1/jwt")
-	jwt.Use(middleware.JWTMiddleware())
+	// Protected routes
+	protected := router.Group("/api/v1")
+	protected.Use(middleware.AuthMiddleware())
+	protected.Use(middleware.VerifyToken())
 	{
-		jwt.GET("/profile", GetProfile)
-		// Add other JWT protected routes
-	}
-
-	// API Key protected routes
-	apiKey := r.Group("/api/v1/apikey")
-	apiKey.Use(middleware.APIKeyMiddleware())
-	{
-		apiKey.GET("/profile", GetProfile)
-		// Add other API Key protected routes
+		protected.GET("/profile", GetProfile)
 	}
 }
