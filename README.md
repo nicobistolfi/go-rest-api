@@ -1,4 +1,5 @@
 # Go REST API Boilerplate
+[![Go Reference](https://pkg.go.dev/badge/github.com/nicobistolfi/go-rest-api.svg)](https://pkg.go.dev/github.com/nicobistolfi/go-rest-api)
 [![Go Report Card](https://goreportcard.com/badge/github.com/nicobistolfi/go-rest-api)](https://goreportcard.com/report/github.com/nicobistolfi/go-rest-api)
 [![Documentation](https://img.shields.io/badge/documentation-yes-blue.svg)](https://go-rest-api.bistol.fi/)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
