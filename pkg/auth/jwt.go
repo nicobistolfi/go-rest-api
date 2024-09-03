@@ -7,7 +7,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 
-	logger "go-rest-api/pkg"
+	logger "github.com/nicobistolfi/go-rest-api/pkg"
 )
 
 // User represents a  user for token generation

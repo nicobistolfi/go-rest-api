@@ -19,7 +19,7 @@ Before using the logger, you need to initialize it. This is typically done at th
 package main
 
 import (
-    logger "go-rest-api/pkg"
+    logger "github.com/nicobistolfi/go-rest-api/pkg"
 )
 
 func main() {

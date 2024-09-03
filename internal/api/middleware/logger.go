@@ -3,7 +3,7 @@ package middleware
 import (
 	"time"
 
-	customLogger "go-rest-api/pkg"
+	customLogger "github.com/nicobistolfi/go-rest-api/pkg"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"

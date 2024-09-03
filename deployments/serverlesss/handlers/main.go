@@ -4,15 +4,15 @@ import (
 	"context"
 	"log"
 
-	"go-rest-api/internal/api"
-	"go-rest-api/internal/config"
+	"github.com/nicobistolfi/go-rest-api/internal/api"
+	"github.com/nicobistolfi/go-rest-api/internal/config"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	ginadapter "github.com/awslabs/aws-lambda-go-api-proxy/gin"
 	"github.com/gin-gonic/gin"
 
-	logger "go-rest-api/pkg"
+	logger "github.com/nicobistolfi/go-rest-api/pkg"
 )
 
 var ginLambda *ginadapter.GinLambda

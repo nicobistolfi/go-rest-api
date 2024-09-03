@@ -43,7 +43,7 @@ To use this middleware in your Gin application, follow these steps:
 1. Import the middleware package:
 
 ```go
-import "go-rest-api/internal/api/middleware"
+import "github.com/nicobistolfi/go-rest-api/internal/api/middleware"
 ```
 
 2. Add the middleware to your Gin router:
@@ -111,7 +111,7 @@ package main
 
 import (
     "github.com/gin-gonic/gin"
-    "go-rest-api/internal/api/middleware"
+    "github.com/nicobistolfi/go-rest-api/internal/api/middleware"
 )
 
 func main() {

@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 
-	"go-rest-api/internal/api/middleware"
+	"github.com/nicobistolfi/go-rest-api/internal/api/middleware"
 )
 
 func TestGetToken(t *testing.T) {

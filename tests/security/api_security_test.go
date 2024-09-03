@@ -2,17 +2,18 @@ package security
 
 import (
 	"encoding/json"
-	"go-rest-api/internal/api"
-	"go-rest-api/internal/config"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
 
+	"github.com/nicobistolfi/go-rest-api/internal/api"
+	"github.com/nicobistolfi/go-rest-api/internal/config"
+
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 
-	logger "go-rest-api/pkg"
+	logger "github.com/nicobistolfi/go-rest-api/pkg"
 )
 
 func setupRouter() *gin.Engine {

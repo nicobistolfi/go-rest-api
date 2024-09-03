@@ -3,10 +3,10 @@ package api
 import (
 	"time"
 
-	"go-rest-api/internal/api/middleware"
-	"go-rest-api/internal/config"
+	"github.com/nicobistolfi/go-rest-api/internal/api/middleware"
+	"github.com/nicobistolfi/go-rest-api/internal/config"
 
-	logger "go-rest-api/pkg"
+	logger "github.com/nicobistolfi/go-rest-api/pkg"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/time/rate"
