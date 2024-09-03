@@ -6,8 +6,9 @@ import (
 	"go-rest-api/internal/api/middleware"
 	"go-rest-api/internal/config"
 
+	logger "go-rest-api/pkg"
+
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 	"golang.org/x/time/rate"
 )
 
@@ -23,7 +24,7 @@ func WithoutRateLimiting() RouterOption {
 	}
 }
 
-func SetupRouter(router *gin.Engine, cfg *config.Config, logger *zap.Logger, opts ...RouterOption) {
+func SetupRouter(router *gin.Engine, cfg *config.Config, logger *logger.Logger, opts ...RouterOption) {
 	options := &routerOptions{}
 	for _, opt := range opts {
 		opt(options)
@@ -35,7 +36,6 @@ func SetupRouter(router *gin.Engine, cfg *config.Config, logger *zap.Logger, opt
 	router.Use(middleware.LoggerMiddleware(logger))
 
 	if options.skipRateLimiting {
-		// Apply rate limiting middleware
 		logger.Info("Rate limiting is disabled")
 	} else {
 		// Apply rate limiting middleware

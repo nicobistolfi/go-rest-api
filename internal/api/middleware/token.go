@@ -3,7 +3,7 @@ package middleware
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 
@@ -81,7 +81,7 @@ func VerifyToken() gin.HandlerFunc {
 			return
 		}
 
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read response"})
 			c.Abort()

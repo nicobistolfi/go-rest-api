@@ -11,14 +11,15 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/zap"
+
+	logger "go-rest-api/pkg"
 )
 
 func setupRouter() *gin.Engine {
 	cfg, _ := config.LoadConfig()
-	logger, _ := zap.NewProduction()
+	logger.Init()
 	r := gin.New()
-	api.SetupRouter(r, cfg, logger)
+	api.SetupRouter(r, cfg, logger.Log)
 	return r
 }
 
@@ -26,7 +27,12 @@ func TestAPISecurityEndpoints(t *testing.T) {
 	// Setup mock token server
 	mockTokenServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Authorization") == "valid_token" {
-			json.NewEncoder(w).Encode(map[string]string{"id": "123", "email": "test@example.com", "name": "Test User"})
+			err := json.NewEncoder(w).Encode(map[string]string{"id": "123", "email": "test@example.com", "name": "Test User"})
+			if err != nil {
+				t.Errorf("Failed to encode JSON response: %v", err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
 		} else {
 			w.WriteHeader(http.StatusUnauthorized)
 		}

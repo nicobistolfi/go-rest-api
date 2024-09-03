@@ -10,7 +10,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/zap"
+
+	logger "go-rest-api/pkg"
 )
 
 func setupTestRouter() *gin.Engine {
@@ -19,18 +20,19 @@ func setupTestRouter() *gin.Engine {
 		JWTSecret:   "test_secret",
 		ValidAPIKey: "test_api_key",
 	}
-	logger, _ := zap.NewDevelopment()
+
+	logger.Init()
 
 	r := gin.New()
 
 	// Add the config and logger to the gin.Context
 	r.Use(func(c *gin.Context) {
 		c.Set("config", cfg)
-		c.Set("logger", logger)
+		c.Set("logger", logger.Log)
 		c.Next()
 	})
 
-	api.SetupRouter(r, cfg, logger)
+	api.SetupRouter(r, cfg, logger.Log)
 	return r
 }
 

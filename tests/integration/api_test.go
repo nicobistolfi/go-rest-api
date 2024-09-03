@@ -4,28 +4,25 @@ import (
 	"encoding/json"
 	"go-rest-api/internal/api"
 	"go-rest-api/internal/config"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/zap"
+
+	logger "go-rest-api/pkg"
 )
 
 func TestAPIEndpoints(t *testing.T) {
 	// Setup the router
-	// Setup the router
 	cfg, err := config.LoadConfig()
 	assert.NoError(t, err, "Failed to load configuration")
 
-	logger, err := zap.NewProduction()
-	assert.NoError(t, err, "Failed to initialize logger")
-	defer logger.Sync()
-
+	logger.Init()
 	r := gin.New()
-	api.SetupRouter(r, cfg, logger)
+	api.SetupRouter(r, cfg, logger.Log)
 
 	// Create a test HTTP server
 	server := httptest.NewServer(r)
@@ -58,7 +55,7 @@ func TestAPIEndpoints(t *testing.T) {
 			assert.Equal(t, tc.expectedStatus, resp.StatusCode, "Unexpected status code")
 
 			// Read and parse the response body
-			body, err := ioutil.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
 			assert.NoError(t, err, "Failed to read response body")
 
 			var responseBody map[string]string
