@@ -5,8 +5,6 @@
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 [![Author](https://img.shields.io/badge/author-%40nicobistolfi-blue.svg)](https://github.com/nicobistolfi)
 
-# Introduction
-
 This Go REST API boilerplate establishes a strong foundation for your API development, emphasizing clean architecture, thorough testing, and flexible deployment options. The modular structure ensures maintainability and scalability by promoting a clear separation of concerns, making it easy to modify and extend your API as needed.
 
 Comprehensive testing is essential for a reliable and secure API. The boilerplate includes a full suite of tests, including unit tests, API security tests, service contract tests, and performance benchmarks. With these tests in place, you can confidently deploy your API using the method that best suits your needs. You can find guides on deploying on different platforms in the [Deployments](/docs/deployments) section.
