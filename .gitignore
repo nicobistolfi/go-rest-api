@@ -1,0 +1,77 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories (remove the comment below to include it)
+vendor/
+
+# Go workspace file
+go.work
+
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Application specific
+/build/
+/bin/
+.bin/
+*.log
+
+# Env files
+.env
+*.env
+
+# Compiled Object files, Static and Dynamic libs (Shared Objects)
+*.o
+*.a
+
+# Debug files
+debug
+
+# Temporary files
+*.tmp
+*.bak
+
+# Docker
+*.dockerfile
+Dockerfile.dev
+
+#serverless
+.serverless
+
+# Node.js
+node_modules/
+
+# Kubernetes
+*.yaml
+!deployments/kubernetes/*.yaml
+
+# Ignore all files in the cmd directory except main.go
+cmd/*
+!cmd/api/main.go
+
+# Ignore all files in internal except directories
+internal/*
+!internal/*/
