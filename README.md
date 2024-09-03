@@ -1,5 +1,9 @@
 # Go REST API Boilerplate
 
+[![Author](https://img.shields.io/badge/author-%40nicobistolfi-blue.svg)](https://github.com/nicobistolfi)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+[![Go Report Card](https://goreportcard.com/badge/github.com/nicobistolfi/go-rest-api)](https://goreportcard.com/report/github.com/nicobistolfi/go-rest-api)
+
 This repository provides a structured Go project for building scalable APIs. It emphasizes clean architecture, separation of concerns, and ease of testing and deployment.
 
 ## Project Structure
@@ -68,6 +72,8 @@ The boilerplate supports multiple deployment strategies:
 Deployment configurations are located in the `deployments/` directory.
 
 ## Documentation
+
+Live documentation for this project can be found at [http://go-rest-api.bistol.fi/](http://go-rest-api.bistol.fi/).
 
 To run the documentation locally:
 
