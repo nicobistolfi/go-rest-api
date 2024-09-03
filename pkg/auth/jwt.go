@@ -47,15 +47,6 @@ func GenerateJWT(secretKey []byte) (string, error) {
 	return tokenString, nil
 }
 
-// mustAtoi converts a string to an integer and panics if it fails
-func mustAtoi(s string) int {
-	i, err := strconv.Atoi(s)
-	if err != nil {
-		panic(err)
-	}
-	return i
-}
-
 // Add this function at the end of the file
 func getJWTExpirationMinutes() int {
 	logger.Init()

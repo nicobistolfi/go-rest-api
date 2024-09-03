@@ -1,3 +1,0 @@
-uses: afarbos/go-report-card-action@v1
-with:
-  threshold: '100'
