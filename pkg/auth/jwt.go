@@ -58,6 +58,7 @@ func mustAtoi(s string) int {
 
 // Add this function at the end of the file
 func getJWTExpirationMinutes() int {
+	logger.Init()
 	defaultExpiration := 1440 // 24 hours in minutes
 	envValue := os.Getenv("JWT_EXPIRATION_MINUTES")
 	if envValue == "" {

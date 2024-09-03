@@ -9,26 +9,21 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+
+	"go-rest-api/internal/api/middleware"
 )
 
-func setupRouter() *gin.Engine {
-	r := gin.Default()
-	r.GET("/token", GetToken)
-	r.GET("/profile", GetProfile)
-	r.GET("/health", HealthCheck)
-	r.GET("/ping", Ping)
-	r.POST("/register", Register)
-	return r
-}
-
 func TestGetToken(t *testing.T) {
+	r := gin.Default()
+
+	r.GET("/token", GetToken)
+
 	os.Setenv("JWT_SECRET", "test_secret")
 	os.Setenv("JWT_EXPIRATION_MINUTES", "1")
-	router := setupRouter()
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/token", nil)
-	router.ServeHTTP(w, req)
+	r.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
 
@@ -39,21 +34,22 @@ func TestGetToken(t *testing.T) {
 }
 
 func TestGetProfile(t *testing.T) {
-	router := setupRouter()
+	r := gin.Default()
+
+	r.Use(func(c *gin.Context) {
+		c.Set("user", middleware.Profile{ID: "1", Email: "test@example.com", Name: "Test User"})
+		c.Next()
+	})
+	r.GET("/profile", GetProfile)
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/profile", nil)
 
-	// Mock the user in the context
-	router.Use(func(c *gin.Context) {
-		c.Set("user", ProfileResponse{ID: "1", Email: "test@example.com", Name: "Test User"})
-	})
-
-	router.ServeHTTP(w, req)
+	r.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
 
-	var response ProfileResponse
+	var response middleware.Profile
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NoError(t, err)
 	assert.Equal(t, "1", response.ID)
@@ -62,11 +58,13 @@ func TestGetProfile(t *testing.T) {
 }
 
 func TestHealthCheck(t *testing.T) {
-	router := setupRouter()
+	r := gin.Default()
+
+	r.GET("/health", HealthCheck)
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/health", nil)
-	router.ServeHTTP(w, req)
+	r.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
 
@@ -77,11 +75,13 @@ func TestHealthCheck(t *testing.T) {
 }
 
 func TestPing(t *testing.T) {
-	router := setupRouter()
+	r := gin.Default()
+
+	r.GET("/ping", Ping)
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/ping", nil)
-	router.ServeHTTP(w, req)
+	r.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
 
@@ -92,11 +92,13 @@ func TestPing(t *testing.T) {
 }
 
 func TestRegister(t *testing.T) {
-	router := setupRouter()
+	r := gin.Default()
+
+	r.POST("/register", Register)
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/register", nil)
-	router.ServeHTTP(w, req)
+	r.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
 

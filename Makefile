@@ -62,9 +62,10 @@ docker/run:
 help:
 	@grep -h -E '^[a-zA-Z_/-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-## test-unit: Run unit tests
+## test-unit: Run unit tests in cmd, internal, and pkg folders
 test-unit:
-	go test ./tests/unit
+	@echo "  >  Running unit tests..."
+	go test ./internal/... ./pkg/...
 
 ## test-integration: Run integration tests
 test-integration:

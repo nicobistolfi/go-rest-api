@@ -10,13 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// ProfileResponse represents the structure of the profile data
-type ProfileResponse struct {
-	ID    string `json:"id"`
-	Email string `json:"email"`
-	Name  string `json:"name"`
-}
-
 func GetToken(c *gin.Context) {
 	secretKey := os.Getenv("JWT_SECRET")
 	if secretKey == "" {
@@ -41,7 +34,7 @@ func GetProfile(c *gin.Context) {
 	// Retrieve the user from the context
 	user, exists := c.Get("user")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found in context"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found in context"})
 		return
 	}
 
