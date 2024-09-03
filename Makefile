@@ -89,4 +89,9 @@ test-contract:
 ## test-all: Run all tests
 test-all: test-unit test-integration test-performance test-security test-e2e
 
-.PHONY: build run clean test test/coverage dep lint docker/build docker/run help test-unit test-integration test-performance test-security test-e2e test-all
+## docs: Run the documentation server locally
+docs:
+	@echo "  >  Starting documentation server..."
+	@cd docs && npm i && npm start -- --port 3001
+
+.PHONY: build run clean test test/coverage dep lint docker/build docker/run help test-unit test-integration test-performance test-security test-e2e test-all docs
