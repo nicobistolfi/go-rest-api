@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	"go-rest-api/pkg/auth" // Adjust this import path as needed
+	"github.com/nicobistolfi/go-rest-api/pkg/auth" // Adjust this import path as needed
 
 	"github.com/gin-gonic/gin"
 )

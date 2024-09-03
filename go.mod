@@ -1,4 +1,4 @@
-module go-rest-api
+module github.com/nicobistolfi/go-rest-api
 
 go 1.22.5
 
