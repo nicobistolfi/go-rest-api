@@ -4,14 +4,15 @@ import (
 	"context"
 	"log"
 
-	"go-boilerplate/internal/api"
-	"go-boilerplate/internal/config"
+	"go-rest-api/internal/api"
+	"go-rest-api/internal/config"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	ginadapter "github.com/awslabs/aws-lambda-go-api-proxy/gin"
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
+
+	logger "go-rest-api/pkg"
 )
 
 var ginLambda *ginadapter.GinLambda
@@ -26,18 +27,13 @@ func init() {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
 
-	// Initialize logger
-	logger, err := zap.NewProduction()
-	if err != nil {
-		log.Fatalf("Failed to initialize logger: %v", err)
-	}
-	defer logger.Sync()
+	logger.Init()
 
 	// Create a new Gin router
 	r := gin.New()
 
 	// Setup router with middleware and routes
-	api.SetupRouter(r, cfg, logger)
+	api.SetupRouter(r, cfg, logger.Log)
 
 	ginLambda = ginadapter.New(r)
 }

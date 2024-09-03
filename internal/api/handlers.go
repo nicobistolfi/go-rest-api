@@ -1,25 +1,25 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 
-	"go-boilerplate/pkg/auth" // Adjust this import path as needed
+	"go-rest-api/pkg/auth" // Adjust this import path as needed
 
 	"github.com/gin-gonic/gin"
 )
 
-// ProfileResponse represents the structure of the profile data
-type ProfileResponse struct {
-	ID    string `json:"id"`
-	Email string `json:"email"`
-	Name  string `json:"name"`
-}
-
 func GetToken(c *gin.Context) {
-	secretKey := []byte(os.Getenv("JWT_SECRET")) // Replace with a secure secret key
-	token, err := auth.GenerateJWT(secretKey)
+	secretKey := os.Getenv("JWT_SECRET")
+	if secretKey == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "JWT_SECRET is not set"})
+		return
+	}
+
+	token, err := auth.GenerateJWT([]byte(secretKey))
 	if err != nil {
+		fmt.Printf("Error generating JWT: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
 		return
 	}
@@ -34,7 +34,7 @@ func GetProfile(c *gin.Context) {
 	// Retrieve the user from the context
 	user, exists := c.Get("user")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found in context"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found in context"})
 		return
 	}
 

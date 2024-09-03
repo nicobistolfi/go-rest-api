@@ -2,15 +2,16 @@ package contract
 
 import (
 	"encoding/json"
-	"go-boilerplate/internal/api"
-	"go-boilerplate/internal/config"
+	"go-rest-api/internal/api"
+	"go-rest-api/internal/config"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/zap"
+
+	logger "go-rest-api/pkg"
 )
 
 func TestServiceContract(t *testing.T) {
@@ -18,12 +19,10 @@ func TestServiceContract(t *testing.T) {
 	cfg, err := config.LoadConfig()
 	assert.NoError(t, err, "Failed to load configuration")
 
-	logger, err := zap.NewProduction()
-	assert.NoError(t, err, "Failed to initialize logger")
-	defer logger.Sync()
+	logger.Init()
 
 	r := gin.New()
-	api.SetupRouter(r, cfg, logger)
+	api.SetupRouter(r, cfg, logger.Log)
 
 	// Create a test HTTP server
 	server := httptest.NewServer(r)

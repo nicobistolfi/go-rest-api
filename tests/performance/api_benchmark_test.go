@@ -1,14 +1,15 @@
 package performance
 
 import (
-	"go-boilerplate/internal/api"
-	"go-boilerplate/internal/config"
+	"go-rest-api/internal/api"
+	"go-rest-api/internal/config"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
+
+	logger "go-rest-api/pkg"
 )
 
 func BenchmarkPingEndpoint(b *testing.B) {
@@ -17,14 +18,10 @@ func BenchmarkPingEndpoint(b *testing.B) {
 		b.Fatalf("Failed to load configuration: %v", err)
 	}
 
-	logger, err := zap.NewProduction()
-	if err != nil {
-		b.Fatalf("Failed to initialize logger: %v", err)
-	}
-	defer logger.Sync()
+	logger.Init()
 
 	router := gin.New()
-	api.SetupRouter(router, cfg, logger, api.WithoutRateLimiting())
+	api.SetupRouter(router, cfg, logger.Log, api.WithoutRateLimiting())
 	server := httptest.NewServer(router)
 	defer server.Close()
 
@@ -44,14 +41,10 @@ func BenchmarkRateLimiting(b *testing.B) {
 		b.Fatalf("Failed to load configuration: %v", err)
 	}
 
-	logger, err := zap.NewProduction()
-	if err != nil {
-		b.Fatalf("Failed to initialize logger: %v", err)
-	}
-	defer logger.Sync()
+	logger.Init()
 
 	router := gin.New()
-	api.SetupRouter(router, cfg, logger) // Use default setup with rate limiting
+	api.SetupRouter(router, cfg, logger.Log) // Use default setup with rate limiting
 
 	server := httptest.NewServer(router)
 	defer server.Close()

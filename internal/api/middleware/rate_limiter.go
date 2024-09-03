@@ -5,14 +5,14 @@ import (
 	"sync"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
+	zap "go.uber.org/zap"
 	"golang.org/x/time/rate"
 )
 
 func RateLimiter(r rate.Limit, b int) gin.HandlerFunc {
 	type client struct {
 		limiter  *rate.Limiter
-		lastSeen int64
+		lastSeen int64 //lint:ignore U1000 This field is currently unused but may be used in future implementations
 	}
 
 	var (

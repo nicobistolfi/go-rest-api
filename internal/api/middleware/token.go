@@ -3,9 +3,11 @@ package middleware
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
+	"sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -15,6 +17,20 @@ var logger *zap.Logger
 
 func init() {
 	logger, _ = zap.NewProduction()
+
+	// Set cache expiry from environment variable or use default
+	cacheExpiryStr := os.Getenv("TOKEN_CACHE_EXPIRY")
+	if cacheExpiryStr == "" {
+		cacheExpiry = 5 * time.Minute
+	} else {
+		duration, err := time.ParseDuration(cacheExpiryStr)
+		if err != nil {
+			logger.Warn("Invalid TOKEN_CACHE_EXPIRY, using default of 5 minutes", zap.Error(err))
+			cacheExpiry = 5 * time.Minute
+		} else {
+			cacheExpiry = duration
+		}
+	}
 }
 
 type Profile struct {
@@ -22,6 +38,17 @@ type Profile struct {
 	Email string `json:"email"`
 	Name  string `json:"name"`
 }
+
+type cacheEntry struct {
+	profile Profile
+	expiry  time.Time
+}
+
+var (
+	tokenCache  = make(map[string]cacheEntry)
+	cacheMutex  sync.RWMutex
+	cacheExpiry time.Duration
+)
 
 func VerifyToken() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -34,7 +61,6 @@ func VerifyToken() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-
 		if !exists {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication token is missing"})
 			c.Abort()
@@ -54,6 +80,22 @@ func VerifyToken() gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "TOKEN_URL not set"})
 			c.Abort()
 			return
+		}
+
+		// Check cache first
+		cacheMutex.RLock()
+		entry, found := tokenCache[tokenString]
+		cacheMutex.RUnlock()
+
+		if found && time.Now().Before(entry.expiry) {
+			// add a header to the response to indicate that the token is cached
+			c.Header("X-Token-Cache", "HIT")
+			c.Set("user", entry.profile)
+			c.Next()
+			return
+		} else {
+			// add a header to the response to indicate that the token is not cached
+			c.Header("X-Token-Cache", "MISS")
 		}
 
 		// Validate token using the TOKEN_URL
@@ -81,7 +123,7 @@ func VerifyToken() gin.HandlerFunc {
 			return
 		}
 
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read response"})
 			c.Abort()
@@ -113,6 +155,14 @@ func VerifyToken() gin.HandlerFunc {
 				profile.Email = githubProfile.Login
 			}
 		}
+
+		// Cache the result
+		cacheMutex.Lock()
+		tokenCache[tokenString] = cacheEntry{
+			profile: profile,
+			expiry:  time.Now().Add(cacheExpiry),
+		}
+		cacheMutex.Unlock()
 
 		c.Set("user", profile)
 		c.Next()

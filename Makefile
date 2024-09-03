@@ -62,9 +62,10 @@ docker/run:
 help:
 	@grep -h -E '^[a-zA-Z_/-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-## test-unit: Run unit tests
+## test-unit: Run unit tests in cmd, internal, and pkg folders
 test-unit:
-	go test ./tests/unit
+	@echo "  >  Running unit tests..."
+	go test ./internal/... ./pkg/...
 
 ## test-integration: Run integration tests
 test-integration:
@@ -89,4 +90,13 @@ test-contract:
 ## test-all: Run all tests
 test-all: test-unit test-integration test-performance test-security test-e2e
 
-.PHONY: build run clean test test/coverage dep lint docker/build docker/run help test-unit test-integration test-performance test-security test-e2e test-all
+## docs: Run the documentation server locally
+docs:
+	@echo "  >  Starting documentation server..."
+	@cd docs && npm i && npm start -- --port 3001
+
+example-auth:
+	@echo " > Running example auth..."
+	@cd examples/auth && npm i && npm run dev
+
+.PHONY: build run clean test test/coverage dep lint docker/build docker/run help test-unit test-integration test-performance test-security test-e2e test-all docs example-auth

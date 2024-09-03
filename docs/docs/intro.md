@@ -1,22 +1,26 @@
 ---
 sidebar_position: 1
+sidebar_label: Introduction
 ---
 
-# Go API Project Structure
+# Introduction
 
-This repository contains a structured Go project for developing a robust and scalable API. The project is organized to promote clean architecture, separation of concerns, and ease of testing and deployment.
+This Go REST API boilerplate provides a solid foundation for your API projects, emphasizing clean architecture, comprehensive testing, and flexible deployment options. By adhering to clean architecture principles, we ensure your API remains maintainable and scalable as it grows. The modular structure promotes a clear separation of concerns, making it easy to modify and extend your API in the future.
+
+Testing plays a crucial role in delivering a reliable and secure API. That's why the boilerplate includes a full suite of tests, covering unit tests, API security, service contracts, and performance benchmarks. With these tests in place, you can confidently deploy your API using your preferred method. Whether you choose Docker, Kubernetes, or serverless functions, you can find the guides on deploying on each of these options in the [Deployments](/docs/deployments) section. 
+OK, here's the modified document with a more direct and technical focus, and less sales-oriented language:
 
 ## Project Structure
 
 ```
-go-boilerplate/
+go-rest-api/
 ├── cmd/
 │   └── api/
 │       └── main.go
 ├── internal/
 │   ├── api/
-│   │   ├── handlers/
 │   │   ├── middleware/
+│   │   ├── handlers.go
 │   │   └── routes.go
 │   ├── config/
 │   ├── models/
@@ -51,8 +55,8 @@ Contains the main applications for this project. The `api/` subdirectory is wher
 Houses packages that are specific to this project and not intended for external use.
 
 - `api/`: Contains API-specific code.
-  - `handlers/`: Request handlers for each API endpoint.
   - `middleware/`: Custom middleware functions.
+  - `handlers.go`: Request handlers for each API endpoint.
   - `routes.go`: Defines API routes and links them to handlers.
 - `config/`: Configuration management for the application.
 - `models/`: Data models and DTOs (Data Transfer Objects).

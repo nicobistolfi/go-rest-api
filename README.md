@@ -1,11 +1,11 @@
-# Go API Boilerplate
+# Go REST API Boilerplate
 
 This repository provides a structured Go project for building scalable APIs. It emphasizes clean architecture, separation of concerns, and ease of testing and deployment.
 
 ## Project Structure
 
 ```
-go-boilerplate/
+go-rest-api/
 ├── cmd/
 │   └── api/
 │       └── main.go

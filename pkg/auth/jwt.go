@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+
+	logger "go-rest-api/pkg"
 )
 
 // User represents a  user for token generation
@@ -29,7 +31,7 @@ func GenerateJWT(secretKey []byte) (string, error) {
 		"user_id":  user.ID,
 		"username": user.Username,
 		"email":    user.Email,
-		"exp":      time.Now().Add(time.Minute * time.Duration(mustAtoi(os.Getenv("JWT_EXPIRATION_MINUTES")))).Unix(), // Token expires in 24 hours
+		"exp":      time.Now().Add(time.Minute * time.Duration(getJWTExpirationMinutes())).Unix(), // Token expires in 24 hours
 		"iat":      time.Now().Unix(),
 	}
 
@@ -52,4 +54,20 @@ func mustAtoi(s string) int {
 		panic(err)
 	}
 	return i
+}
+
+// Add this function at the end of the file
+func getJWTExpirationMinutes() int {
+	logger.Init()
+	defaultExpiration := 1440 // 24 hours in minutes
+	envValue := os.Getenv("JWT_EXPIRATION_MINUTES")
+	if envValue == "" {
+		logger.Info("JWT_EXPIRATION_MINUTES is not set, using default value of 24 hours")
+		return defaultExpiration
+	}
+	minutes, err := strconv.Atoi(envValue)
+	if err != nil {
+		return defaultExpiration
+	}
+	return minutes
 }
