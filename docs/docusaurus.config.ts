@@ -69,17 +69,17 @@ const config: Config = {
       title: 'Go REST API',
       logo: {
         alt: 'Go REST API Logo',
-        src: 'img/logo.svg',
+        src: 'img/logo.png',
       },
       items: [
         {
           type: 'docSidebar',
           sidebarId: 'tutorialSidebar',
           position: 'left',
-          label: 'Tutorial',
+          label: 'Documentation',
         },
         {
-          href: 'https://github.com/facebook/docusaurus',
+          href: 'https://github.com/nicobistolfi/go-rest-api?ref=go-rest-api',
           label: 'GitHub',
           position: 'right',
         },
@@ -92,25 +92,34 @@ const config: Config = {
           title: 'Docs',
           items: [
             {
-              label: 'Tutorial',
+              label: 'Documentation',
               to: '/docs/intro',
             },
           ],
         },
         {
-          title: 'Community',
+          title: 'Go REST API',
           items: [
             {
-              label: 'Stack Overflow',
-              href: 'https://stackoverflow.com/questions/tagged/docusaurus',
+              label: 'Github',
+              href: 'https://github.com/nicobistolfi/go-rest-api?ref=go-rest-api',
+            },
+          ],
+        },
+        {
+          title: 'Author',
+          items: [
+            {
+              label: 'Linkedin',
+              href: 'https://www.linkedin.com/in/nicobistolfi/?ref=go-rest-api',
             },
             {
-              label: 'Discord',
-              href: 'https://discordapp.com/invite/docusaurus',
+              label: 'Github',
+              href: 'https://github.com/nicobistolfi?ref=go-rest-api',
             },
             {
-              label: 'Twitter',
-              href: 'https://twitter.com/docusaurus',
+              label: 'Website',
+              href: 'https://nico.bistol.fi/?ref=go-rest-api',
             },
           ],
         },
@@ -128,7 +137,7 @@ const config: Config = {
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+      copyright: `Built with Docusaurus.`,
     },
     prism: {
       theme: prismThemes.github,
