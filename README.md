@@ -1,4 +1,8 @@
 # Go REST API Boilerplate
+[![Documentation](https://img.shields.io/badge/documentation-yes-brightgreen.svg)](https://go-rest-api.bistol.fi/)
+[![Go Report Card](https://goreportcard.com/badge/github.com/nicobistolfi/go-rest-api)](https://goreportcard.com/report/github.com/nicobistolfi/go-rest-api)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+[![Author](https://img.shields.io/badge/author-%40nicobistolfi-blue.svg)](https://github.com/nicobistolfi)
 
 This repository provides a structured Go project for building scalable APIs. It emphasizes clean architecture, separation of concerns, and ease of testing and deployment.
 
@@ -79,6 +83,22 @@ To run the documentation locally:
 3. Open `http://localhost:3000` in your browser
 
 This will start a Docusaurus site with comprehensive project documentation.
+
+## Live Documentation
+
+For the most up-to-date and comprehensive documentation, please visit our [official documentation site](https://go-rest-api.bistol.fi/). This site includes:
+
+- Detailed API references
+- In-depth guides on architecture and best practices
+- Deployment tutorials for various platforms
+
+## Key Features
+
+1. **Robust Architecture**: Built with clean architecture principles, ensuring separation of concerns and maintainability.
+2. **Comprehensive Testing**: Includes a full suite of tests, covering unit tests, API security tests, service contract tests, and performance benchmarks.
+3. **Flexible Deployment Options**: Supports Docker containers, Kubernetes orchestration, and serverless functions, with detailed deployment guides for each option.
+
+For more information on these features and how to leverage them in your project, please refer to our [live documentation](https://go-rest-api.bistol.fi/).
 
 ## Getting Started
 
