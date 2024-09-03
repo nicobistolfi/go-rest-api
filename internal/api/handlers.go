@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 
@@ -17,9 +18,15 @@ type ProfileResponse struct {
 }
 
 func GetToken(c *gin.Context) {
-	secretKey := []byte(os.Getenv("JWT_SECRET")) // Replace with a secure secret key
-	token, err := auth.GenerateJWT(secretKey)
+	secretKey := os.Getenv("JWT_SECRET")
+	if secretKey == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "JWT_SECRET is not set"})
+		return
+	}
+
+	token, err := auth.GenerateJWT([]byte(secretKey))
 	if err != nil {
+		fmt.Printf("Error generating JWT: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
 		return
 	}
