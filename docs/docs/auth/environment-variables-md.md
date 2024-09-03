@@ -1,3 +1,7 @@
+---
+title: Environment Variables
+---
+
 # Environment Variables
 
 The authentication system uses environment variables for configuration. These variables allow for flexible deployment across different environments.

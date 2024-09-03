@@ -1,3 +1,7 @@
+---
+title: Token Caching
+---
+
 # Token Caching
 
 The token caching mechanism is implemented within the Token Middleware to improve performance by reducing the number of external API calls for token validation.

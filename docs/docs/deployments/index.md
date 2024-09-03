@@ -1,3 +1,7 @@
+---
+title: Deployment Options
+---
+
 # Deployment Options
 
 This guide provides an overview of the different deployment options available for the Go REST API. Choose the method that best suits your project requirements and infrastructure setup.
