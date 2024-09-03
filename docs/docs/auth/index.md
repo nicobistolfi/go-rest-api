@@ -20,7 +20,7 @@ To add new endpoints that require authentication, you'll need to modify the `rou
 1. Open the `routes.go` file:
 
 
-```1:38:internal/api/routes.go
+```go
 package api
 
 import (
@@ -105,7 +105,7 @@ The authentication system uses two main middleware components: `auth.go` and `to
 ### auth.go Middleware
 
 
-```1:43:internal/api/middleware/auth.go
+```go
 package middleware
 
 import (
@@ -161,7 +161,7 @@ This middleware:
 ### token.go Middleware
 
 
-```1:120:internal/api/middleware/token.go
+```go
 package middleware
 
 import (
