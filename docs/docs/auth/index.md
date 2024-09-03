@@ -1,6 +1,7 @@
 ---
 title: Authentication
 ---
+
 ## Importance of Authentication
 
 Authentication is a crucial aspect of any API, serving several important purposes:

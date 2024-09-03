@@ -1,3 +1,7 @@
+---
+title: Token Middleware
+---
+
 # Token Middleware
 
 The Token Middleware, defined in `token.go`, is responsible for validating authentication tokens and retrieving user profiles. It works in conjunction with the Auth Middleware to provide a complete authentication solution. This middleware ensures that only valid tokens are accepted and provides user profile information for authenticated requests.

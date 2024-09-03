@@ -1,3 +1,7 @@
+---
+title: Auth Middleware
+---
+
 # Auth Middleware
 
 The Auth Middleware, defined in `auth.go`, is responsible for extracting authentication tokens from incoming requests. It supports multiple authentication methods to provide flexibility in how clients can authenticate.
