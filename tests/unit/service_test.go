@@ -6,8 +6,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"go-boilerplate/internal/api"
-	"go-boilerplate/internal/config"
+	"go-rest-api/internal/api"
+	"go-rest-api/internal/config"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"

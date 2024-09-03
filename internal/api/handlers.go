@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"os"
 
-	"go-boilerplate/pkg/auth" // Adjust this import path as needed
+	"go-rest-api/pkg/auth" // Adjust this import path as needed
 
 	"github.com/gin-gonic/gin"
 )

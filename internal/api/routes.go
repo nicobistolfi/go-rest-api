@@ -3,8 +3,8 @@ package api
 import (
 	"time"
 
-	"go-boilerplate/internal/api/middleware"
-	"go-boilerplate/internal/config"
+	"go-rest-api/internal/api/middleware"
+	"go-rest-api/internal/config"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"

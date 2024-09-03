@@ -21,7 +21,7 @@ The following file in the `/deployments/docker` directory is used for the Docker
 
 1. Navigate to the project root directory:
    ```bash
-   cd go-boilerplate
+   cd go-rest-api
    ```
 
 2. Build the Docker image:

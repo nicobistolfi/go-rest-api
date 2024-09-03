@@ -9,7 +9,7 @@ This repository contains a structured Go project for developing a robust and sca
 ## Project Structure
 
 ```
-go-boilerplate/
+go-rest-api/
 ├── cmd/
 │   └── api/
 │       └── main.go

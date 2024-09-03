@@ -1,8 +1,8 @@
 package performance
 
 import (
-	"go-boilerplate/internal/api"
-	"go-boilerplate/internal/config"
+	"go-rest-api/internal/api"
+	"go-rest-api/internal/config"
 	"net/http"
 	"net/http/httptest"
 	"testing"
