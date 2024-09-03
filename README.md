@@ -1,6 +1,6 @@
 # Go REST API Boilerplate
-[![Documentation](https://img.shields.io/badge/documentation-yes-brightgreen.svg)](https://go-rest-api.bistol.fi/)
 [![Go Report Card](https://goreportcard.com/badge/github.com/nicobistolfi/go-rest-api)](https://goreportcard.com/report/github.com/nicobistolfi/go-rest-api)
+[![Documentation](https://img.shields.io/badge/documentation-yes-blue.svg)](https://go-rest-api.bistol.fi/)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 [![Author](https://img.shields.io/badge/author-%40nicobistolfi-blue.svg)](https://github.com/nicobistolfi)
 
