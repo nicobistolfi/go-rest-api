@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 	"sync"
 
@@ -9,7 +10,7 @@ import (
 	"golang.org/x/time/rate"
 )
 
-func RateLimiter(r rate.Limit, b int) gin.HandlerFunc {
+func RateLimiter(r rate.Limit, b int, keyPrefixes ...string) gin.HandlerFunc {
 	type client struct {
 		limiter  *rate.Limiter
 		lastSeen int64 //lint:ignore U1000 This field is currently unused but may be used in future implementations
@@ -23,8 +24,24 @@ func RateLimiter(r rate.Limit, b int) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Use only IP if Authorization header is empty
 		key := c.ClientIP()
+		// Check if c.ClientIP() is empty
+		if key == "" {
+			// get the first X-Real-Ip header
+			key = c.GetHeader("X-Real-Ip")
+		}
+		if key == "" {
+			// get the first X-Forwarded-For header
+			key = c.GetHeader("X-Forwarded-For")
+		}
+
+		fmt.Println("key", key)
 		if auth := c.GetHeader("Authorization"); auth != "" {
 			key += ":" + auth
+		}
+
+		// Add the optional keyPrefix to the key if provided
+		if len(keyPrefixes) > 0 && keyPrefixes[0] != "" {
+			key = keyPrefixes[0] + ":" + key
 		}
 
 		mu.Lock()

@@ -1,27 +1,33 @@
 package middleware
 
 import (
+	"net/http"
 	"os"
 	"strings"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 func CORSMiddleware() gin.HandlerFunc {
-	config := cors.DefaultConfig()
+	return func(c *gin.Context) {
+		origin := c.Request.Header.Get("Origin")
+		allowedOrigins := os.Getenv("ALLOWED_ORIGINS")
 
-	allowedOrigins := os.Getenv("ALLOWED_ORIGINS")
-	if allowedOrigins != "" {
-		config.AllowOrigins = strings.Split(allowedOrigins, ",")
-	} else {
-		config.AllowOriginFunc = func(origin string) bool {
-			return strings.HasPrefix(origin, "http://localhost") || strings.HasPrefix(origin, "https://localhost")
+		if origin != "" && (allowedOrigins == "*" || strings.Contains(allowedOrigins, origin)) {
+			c.Header("Access-Control-Allow-Origin", origin)
+		} else {
+			c.Header("Access-Control-Allow-Origin", "*")
 		}
+
+		c.Header("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS")
+		c.Header("Access-Control-Allow-Headers", "Authorization,Content-Type")
+		c.Header("Access-Control-Allow-Credentials", "true")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(http.StatusOK)
+			return
+		}
+
+		c.Next()
 	}
-
-	config.AllowMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"}
-	config.AllowHeaders = []string{"Origin", "Content-Type", "Accept", "Authorization"}
-
-	return cors.New(config)
 }

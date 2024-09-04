@@ -20,6 +20,7 @@ func init() {
 
 	// Set cache expiry from environment variable or use default
 	cacheExpiryStr := os.Getenv("TOKEN_CACHE_EXPIRY")
+	fmt.Printf("Cache expiry: %v\n", cacheExpiryStr)
 	if cacheExpiryStr == "" {
 		cacheExpiry = 5 * time.Minute
 	} else {
@@ -50,8 +51,17 @@ var (
 	cacheExpiry time.Duration
 )
 
-func VerifyToken() gin.HandlerFunc {
+func VerifyToken(customCacheExpiry ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		verifyCacheExpiry := cacheExpiry
+		if len(customCacheExpiry) > 0 {
+			verifyCacheExpiryParsed, err := time.ParseDuration(customCacheExpiry[0])
+			if err != nil {
+				logger.Warn("Invalid cache expiry, using default", zap.Error(err))
+			} else {
+				verifyCacheExpiry = verifyCacheExpiryParsed
+			}
+		}
 		// Get the token from the context set by AuthMiddleware
 		token, exists := c.Get("auth_token")
 		authHeader, authHeaderExists := c.Get("auth_header")
@@ -87,16 +97,25 @@ func VerifyToken() gin.HandlerFunc {
 		entry, found := tokenCache[tokenString]
 		cacheMutex.RUnlock()
 
-		if found && time.Now().Before(entry.expiry) {
-			// add a header to the response to indicate that the token is cached
+		// print details of the entry and expiry times as well as the current time
+		fmt.Printf("Entry: %+v\n", entry)
+		fmt.Printf("Expiry: %v\n", entry.expiry)
+		fmt.Printf("Current time: %v\n", time.Now())
+
+		valid := time.Now().Before(entry.expiry)
+		fmt.Printf("Valid: %v\n", valid)
+
+		if found && valid {
+			fmt.Println("Token is still valid in cache")
+			// Token is still valid in cache
 			c.Header("X-Token-Cache", "HIT")
 			c.Set("user", entry.profile)
 			c.Next()
 			return
-		} else {
-			// add a header to the response to indicate that the token is not cached
-			c.Header("X-Token-Cache", "MISS")
 		}
+
+		// Token not found in cache or expired
+		c.Header("X-Token-Cache", "MISS")
 
 		// Validate token using the TOKEN_URL
 		req, err := http.NewRequest("GET", tokenURL, nil)
@@ -160,7 +179,7 @@ func VerifyToken() gin.HandlerFunc {
 		cacheMutex.Lock()
 		tokenCache[tokenString] = cacheEntry{
 			profile: profile,
-			expiry:  time.Now().Add(cacheExpiry),
+			expiry:  time.Now().Add(verifyCacheExpiry),
 		}
 		cacheMutex.Unlock()
 
