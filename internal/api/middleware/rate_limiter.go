@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
 	"sync"
 
@@ -34,7 +33,6 @@ func RateLimiter(r rate.Limit, b int, keyPrefixes ...string) gin.HandlerFunc {
 			key = c.GetHeader("X-Forwarded-For")
 		}
 
-		fmt.Println("key", key)
 		if auth := c.GetHeader("Authorization"); auth != "" {
 			key += ":" + auth
 		}

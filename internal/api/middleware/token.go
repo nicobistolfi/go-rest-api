@@ -20,7 +20,6 @@ func init() {
 
 	// Set cache expiry from environment variable or use default
 	cacheExpiryStr := os.Getenv("TOKEN_CACHE_EXPIRY")
-	fmt.Printf("Cache expiry: %v\n", cacheExpiryStr)
 	if cacheExpiryStr == "" {
 		cacheExpiry = 5 * time.Minute
 	} else {
@@ -59,7 +58,9 @@ func VerifyToken(customCacheExpiry ...string) gin.HandlerFunc {
 			if err != nil {
 				logger.Warn("Invalid cache expiry, using default", zap.Error(err))
 			} else {
+				fmt.Printf("Using custom cache expiry: %v\n", verifyCacheExpiryParsed)
 				verifyCacheExpiry = verifyCacheExpiryParsed
+				fmt.Printf("verifyCacheExpiry: %v\n", verifyCacheExpiry)
 			}
 		}
 		// Get the token from the context set by AuthMiddleware
@@ -85,6 +86,7 @@ func VerifyToken(customCacheExpiry ...string) gin.HandlerFunc {
 		}
 
 		tokenURL := os.Getenv("TOKEN_URL")
+		fmt.Printf("tokenURL: %v\n", tokenURL)
 
 		if tokenURL == "" {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "TOKEN_URL not set"})
@@ -96,11 +98,6 @@ func VerifyToken(customCacheExpiry ...string) gin.HandlerFunc {
 		cacheMutex.RLock()
 		entry, found := tokenCache[tokenString]
 		cacheMutex.RUnlock()
-
-		// print details of the entry and expiry times as well as the current time
-		fmt.Printf("Entry: %+v\n", entry)
-		fmt.Printf("Expiry: %v\n", entry.expiry)
-		fmt.Printf("Current time: %v\n", time.Now())
 
 		valid := time.Now().Before(entry.expiry)
 		fmt.Printf("Valid: %v\n", valid)
