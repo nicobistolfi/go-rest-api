@@ -1,13 +1,26 @@
-# Go REST API Boilerplate
+# Minimalistic Go REST API Boilerplate
 [![Go Reference](https://pkg.go.dev/badge/github.com/nicobistolfi/go-rest-api.svg)](https://pkg.go.dev/github.com/nicobistolfi/go-rest-api)
 [![Go Report Card](https://goreportcard.com/badge/github.com/nicobistolfi/go-rest-api)](https://goreportcard.com/report/github.com/nicobistolfi/go-rest-api)
 [![Documentation](https://img.shields.io/badge/documentation-yes-blue.svg)](https://go-rest-api.bistol.fi/)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 [![Author](https://img.shields.io/badge/author-%40nicobistolfi-blue.svg)](https://github.com/nicobistolfi)
 
-This Go REST API boilerplate establishes a strong foundation for your API development, emphasizing clean architecture, thorough testing, and flexible deployment options. The modular structure ensures maintainability and scalability by promoting a clear separation of concerns, making it easy to modify and extend your API as needed.
+This Minimalistic Go REST API boilerplate establishes a strong foundation for your API development, emphasizing clean architecture, thorough testing, and flexible deployment options. The modular structure ensures maintainability and scalability by promoting a clear separation of concerns, making it easy to modify and extend your API as needed witouth a steep learning curve on how the API is setup or dependencies.
 
 Comprehensive testing is essential for a reliable and secure API. The boilerplate includes a full suite of tests, including unit tests, API security tests, service contract tests, and performance benchmarks. With these tests in place, you can confidently deploy your API using the method that best suits your needs. You can find guides on deploying on different platforms in the [Deployments](https://go-rest-api.bistol.fi/docs/deployments/) section.
+
+## Principles
+
+- **Simplicity First**: Flat learning curve, easy to understand and modify.
+- **Idiomatic Go**: Following the Go proverb "Clear is better than clever."
+- **Minimal Dependencies**: Lightweight focused libraries that meet basic needs and can be easily replaced.
+- **Modularity**: Flexible and modular, allowing for easy extension without overplanning.
+- **Standard Library Preference**: Utilize Go's rich standard library wherever possible, only introducing external dependencies when absolutely necessary.
+- **KISS (Keep It Simple, Stupid)**: Avoid premature optimizations and complex abstractions.
+- **Rapid Iteration**: Enable fast prototyping and quicker feedback cycles.
+- **Error Handling**: Explicit error checks and avoiding panic in regular operations.
+- **Concurrency When Appropriate**: Only when they provide clear benefits.
+- **Testing Dorito Approach**: Write tests. Not too many. Mostly integration..
 
 ## Getting Started
 
