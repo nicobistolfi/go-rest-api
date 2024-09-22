@@ -50,8 +50,19 @@ var (
 	cacheExpiry time.Duration
 )
 
-func VerifyToken() gin.HandlerFunc {
+func VerifyToken(customCacheExpiry ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		verifyCacheExpiry := cacheExpiry
+		if len(customCacheExpiry) > 0 {
+			verifyCacheExpiryParsed, err := time.ParseDuration(customCacheExpiry[0])
+			if err != nil {
+				logger.Warn("Invalid cache expiry, using default", zap.Error(err))
+			} else {
+				fmt.Printf("Using custom cache expiry: %v\n", verifyCacheExpiryParsed)
+				verifyCacheExpiry = verifyCacheExpiryParsed
+				fmt.Printf("verifyCacheExpiry: %v\n", verifyCacheExpiry)
+			}
+		}
 		// Get the token from the context set by AuthMiddleware
 		token, exists := c.Get("auth_token")
 		authHeader, authHeaderExists := c.Get("auth_header")
@@ -75,6 +86,7 @@ func VerifyToken() gin.HandlerFunc {
 		}
 
 		tokenURL := os.Getenv("TOKEN_URL")
+		fmt.Printf("tokenURL: %v\n", tokenURL)
 
 		if tokenURL == "" {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "TOKEN_URL not set"})
@@ -87,16 +99,20 @@ func VerifyToken() gin.HandlerFunc {
 		entry, found := tokenCache[tokenString]
 		cacheMutex.RUnlock()
 
-		if found && time.Now().Before(entry.expiry) {
-			// add a header to the response to indicate that the token is cached
+		valid := time.Now().Before(entry.expiry)
+		fmt.Printf("Valid: %v\n", valid)
+
+		if found && valid {
+			fmt.Println("Token is still valid in cache")
+			// Token is still valid in cache
 			c.Header("X-Token-Cache", "HIT")
 			c.Set("user", entry.profile)
 			c.Next()
 			return
-		} else {
-			// add a header to the response to indicate that the token is not cached
-			c.Header("X-Token-Cache", "MISS")
 		}
+
+		// Token not found in cache or expired
+		c.Header("X-Token-Cache", "MISS")
 
 		// Validate token using the TOKEN_URL
 		req, err := http.NewRequest("GET", tokenURL, nil)
@@ -160,7 +176,7 @@ func VerifyToken() gin.HandlerFunc {
 		cacheMutex.Lock()
 		tokenCache[tokenString] = cacheEntry{
 			profile: profile,
-			expiry:  time.Now().Add(cacheExpiry),
+			expiry:  time.Now().Add(verifyCacheExpiry),
 		}
 		cacheMutex.Unlock()
 
