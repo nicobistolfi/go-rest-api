@@ -222,7 +222,7 @@ tasks:
     preconditions:
       - sh: command -v npm
         msg: "npm is not installed. Please install Node.js and npm"
-      - sh: test -f deployments/serverless/serverless.yml
+      - sh: test -f serverless.yml
         msg: "serverless.yml not found in deployments/serverless"
 
   # Aliases for backward compatibility
