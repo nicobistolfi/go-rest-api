@@ -17,7 +17,7 @@ This guide explains how to deploy the Go REST API using the Serverless Framework
 The following files in the `/deployments/serverless` directory are used for the serverless deployment:
 
 - `serverless.yml`: Main configuration file for the Serverless Framework
-- `Makefile`: Contains commands to build and deploy the application
+- `Taskfile.yml`: Contains commands to build and deploy the application
 - `main.go`: The Lambda function entry point
 
 ## Deployment Steps
@@ -29,12 +29,12 @@ The following files in the `/deployments/serverless` directory are used for the 
 
 2. Build the Go binary:
    ```bash
-   make build
+   task build
    ```
 
 3. Deploy the application:
    ```bash
-   make deploy
+   task deploy
    ```
 
    This command will package your application and deploy it to AWS Lambda using the Serverless Framework.
@@ -51,13 +51,13 @@ The `serverless.yml` file contains the configuration for your serverless deploym
 - An API Gateway is set up to trigger the Lambda function
 - The API paths are defined to route requests to the Lambda function
 
-## Makefile Commands
+## Taskfile Commands
 
-The `Makefile` provides the following commands:
+The `Taskfile.yml` provides the following commands:
 
-- `make build`: Compiles the Go application for AWS Lambda
-- `make deploy`: Deploys the application using Serverless Framework
-- `make remove`: Removes the deployed application from AWS
+- `task build`: Compiles the Go application for AWS Lambda
+- `task deploy`: Deploys the application using Serverless Framework
+- `task remove`: Removes the deployed application from AWS
 
 ## Customization
 
@@ -65,7 +65,7 @@ To customize the deployment:
 
 1. Modify the `serverless.yml` file to change AWS region, function name, or API Gateway settings.
 2. Update the `main.go` file if you need to change the Lambda function's behavior.
-3. Adjust the `Makefile` if you need to modify the build or deployment process.
+3. Adjust the `Taskfile.yml` if you need to modify the build or deployment process.
 
 ## Accessing the API
 

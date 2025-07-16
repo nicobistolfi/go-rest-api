@@ -1,0 +1,126 @@
+version: '3'
+
+vars:
+  BINARY_NAME: api
+  BUILD_DIR: build
+  DOCKER_IMAGE: my-go-api
+  VERSION:
+    sh: echo ${VERSION:-0.0.1}
+
+tasks:
+  default:
+    desc: Show available tasks
+    cmds:
+      - task --list
+
+  build:
+    desc: Compile the binary
+    cmds:
+      - echo "  >  Building binary..."
+      - go build -o {{.BUILD_DIR}}/{{.BINARY_NAME}} ./cmd/api
+
+  run:
+    desc: Build and run the binary
+    deps: [build]
+    cmds:
+      - echo "  >  Running binary..."
+      - "{{.BUILD_DIR}}/{{.BINARY_NAME}}"
+
+  clean:
+    desc: Clean build files. Runs `go clean` internally
+    cmds:
+      - echo "  >  Cleaning build cache"
+      - go clean
+      - rm -rf {{.BUILD_DIR}}
+
+  test:
+    desc: Run unit tests
+    cmds:
+      - echo "  >  Running unit tests..."
+      - go test ./...
+
+  test:coverage:
+    desc: Run unit tests with coverage
+    cmds:
+      - echo "  >  Running unit tests with coverage..."
+      - go test ./... -coverprofile=coverage.out
+
+  dep:
+    desc: Get the dependencies
+    cmds:
+      - echo "  >  Ensuring dependencies are up to date..."
+      - go mod tidy
+
+  lint:
+    desc: Lint the code
+    cmds:
+      - echo "  >  Linting code..."
+      - golangci-lint run
+
+  docker:build:
+    desc: Build the docker image
+    cmds:
+      - echo "  >  Building docker image..."
+      - docker build -t {{.DOCKER_IMAGE}}:{{.VERSION}} -f deployments/docker/Dockerfile .
+
+  docker:run:
+    desc: Run the docker image
+    cmds:
+      - echo "  >  Running docker image..."
+      - docker run -p 8080:8080 {{.DOCKER_IMAGE}}:{{.VERSION}}
+
+  test:unit:
+    desc: Run unit tests in cmd, internal, and pkg folders
+    cmds:
+      - echo "  >  Running unit tests..."
+      - go test ./internal/... ./pkg/...
+
+  test:integration:
+    desc: Run integration tests
+    cmds:
+      - go test ./tests/integration
+
+  test:performance:
+    desc: Run performance tests
+    cmds:
+      - go test -bench=. ./tests/performance
+
+  test:security:
+    desc: Run security tests
+    cmds:
+      - go test ./tests/security
+
+  test:e2e:
+    desc: Run end-to-end tests
+    cmds:
+      - go test ./tests/e2e
+
+  test:contract:
+    desc: Run contract tests
+    cmds:
+      - go test ./tests/contract
+
+  test:all:
+    desc: Run all tests
+    deps:
+      - test:unit
+      - test:integration
+      - test:performance
+      - test:security
+      - test:e2e
+
+  docs:
+    desc: Run the documentation server locally
+    dir: docs
+    cmds:
+      - echo "  >  Starting documentation server..."
+      - npm i
+      - npm start -- --port 3001
+
+  example:auth:
+    desc: Running example auth
+    dir: examples/auth
+    cmds:
+      - echo " > Running example auth..."
+      - npm i
+      - npm run dev

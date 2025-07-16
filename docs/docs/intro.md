@@ -39,7 +39,7 @@ go-rest-api/
 ├── .gitignore
 ├── go.mod
 ├── go.sum
-├── Makefile
+├── Taskfile.yml
 ├── LICENSE
 └── README.md
 ```
@@ -88,7 +88,7 @@ Project documentation, API specifications, and any other relevant documentation.
 #### Root Files
 - `.gitignore`: Specifies intentionally untracked files to ignore.
 - `go.mod` and `go.sum`: Go module files for dependency management.
-- `Makefile`: Defines commands for building, testing, and deploying the application.
+- `Taskfile.yml`: Defines commands for building, testing, and deploying the application.
 - `LICENSE`: Contains the MIT License text.
 - `README.md`: This file, providing an overview of the project structure.
 
@@ -97,10 +97,10 @@ Project documentation, API specifications, and any other relevant documentation.
 1. Clone this repository.
 2. Navigate to the project root.
 3. Run `go mod tidy` to ensure all dependencies are correctly installed.
-4. Use the provided Makefile commands for common tasks:
-   - `make build`: Build the application
-   - `make test`: Run all tests
-   - `make run`: Run the application locally
+4. Use the provided Taskfile commands for common tasks:
+   - `task build`: Build the application
+   - `task test`: Run all tests
+   - `task run`: Run the application locally
 
 ## Development Workflow
 

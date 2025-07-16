@@ -1,15 +1,15 @@
 ---
 sidebar_position: 2
-sidebar_label: Makefile
+sidebar_label: Taskfile
 ---
 
-# Using the Makefile in Go REST API Boilerplate
+# Using the Taskfile in Go REST API Boilerplate
 
-This document explains how to use the Makefile provided in the Go REST API Boilerplate project. The Makefile contains various commands to streamline development, testing, and deployment processes.
+This document explains how to use the Taskfile provided in the Go REST API Boilerplate project. The Taskfile contains various commands to streamline development, testing, and deployment processes.
 
 ## Prerequisites
 
-- Make sure you have `make` installed on your system.
+- Make sure you have `task` installed on your system.
 - Ensure you have Go installed and properly configured.
 - Docker should be installed for Docker-related commands.
 
@@ -17,147 +17,147 @@ This document explains how to use the Makefile provided in the Go REST API Boile
 
 ### Building and Running
 
-- `make build`: Compiles the binary.
+- `task build`: Compiles the binary.
   ```
-  make build
+  task build
   ```
 
-- `make run`: Builds and runs the binary.
+- `task run`: Builds and runs the binary.
   ```
-  make run
+  task run
   ```
 
 ### Cleaning
 
-- `make clean`: Cleans build files and cache.
+- `task clean`: Cleans build files and cache.
   ```
-  make clean
+  task clean
   ```
 
 ### Testing
 
-- `make test`: Runs all unit tests.
+- `task test`: Runs all unit tests.
   ```
-  make test
-  ```
-
-- `make test/coverage`: Runs unit tests with coverage.
-  ```
-  make test/coverage
+  task test
   ```
 
-- `make test-unit`: Runs only unit tests.
+- `task test:coverage`: Runs unit tests with coverage.
   ```
-  make test-unit
-  ```
-
-- `make test-integration`: Runs integration tests.
-  ```
-  make test-integration
+  task test:coverage
   ```
 
-- `make test-performance`: Runs performance tests.
+- `task test-unit`: Runs only unit tests.
   ```
-  make test-performance
-  ```
-
-- `make test-security`: Runs security tests.
-  ```
-  make test-security
+  task test-unit
   ```
 
-- `make test-e2e`: Runs end-to-end tests.
+- `task test-integration`: Runs integration tests.
   ```
-  make test-e2e
-  ```
-
-- `make test-contract`: Runs contract tests.
-  ```
-  make test-contract
+  task test-integration
   ```
 
-- `make test-all`: Runs all types of tests.
+- `task test-performance`: Runs performance tests.
   ```
-  make test-all
+  task test-performance
+  ```
+
+- `task test-security`: Runs security tests.
+  ```
+  task test-security
+  ```
+
+- `task test-e2e`: Runs end-to-end tests.
+  ```
+  task test-e2e
+  ```
+
+- `task test-contract`: Runs contract tests.
+  ```
+  task test-contract
+  ```
+
+- `task test-all`: Runs all types of tests.
+  ```
+  task test-all
   ```
 
 ### Dependencies
 
-- `make dep`: Ensures dependencies are up to date.
+- `task dep`: Ensures dependencies are up to date.
   ```
-  make dep
+  task dep
   ```
 
 ### Code Quality
 
-- `make lint`: Lints the code using golangci-lint.
+- `task lint`: Lints the code using golangci-lint.
   ```
-  make lint
+  task lint
   ```
 
 ### Docker
 
-- `make docker/build`: Builds the Docker image.
+- `task docker:build`: Builds the Docker image.
   ```
-  make docker/build
+  task docker:build
   ```
 
-- `make docker/run`: Runs the Docker image.
+- `task docker:run`: Runs the Docker image.
   ```
-  make docker/run
+  task docker:run
   ```
 
 ### Documentation
 
-- `make docs`: Starts the documentation server locally.
+- `task docs`: Starts the documentation server locally.
   ```
-  make docs
+  task docs
   ```
 
 ### Help
 
-- `make help`: Displays help information about available commands.
+- `task help`: Displays help information about available commands.
   ```
-  make help
+  task help
   ```
 
 ## Usage Examples
 
 1. To start development:
    ```
-   make dep
-   make build
-   make run
+   task dep
+   task build
+   task run
    ```
 
 2. To run tests before committing:
    ```
-   make test-all
+   task test-all
    ```
 
 3. To build and run in Docker:
    ```
-   make docker/build
-   make docker/run
+   task docker:build
+   task docker:run
    ```
 
 4. To check code quality:
    ```
-   make lint
+   task lint
    ```
 
 5. To view documentation:
    ```
-   make docs
+   task docs
    ```
 
-## Customizing the Makefile
+## Customizing the Taskfile
 
-You can customize the Makefile by modifying variables at the top:
+You can customize the Taskfile by modifying variables at the top:
 
 - `BINARY_NAME`: Change the name of the compiled binary.
 - `BUILD_DIR`: Alter the build directory.
 - `DOCKER_IMAGE`: Modify the Docker image name.
 - `VERSION`: Update the version number.
 
-Remember to run `make help` to see all available commands and their descriptions.
+Remember to run `task help` to see all available commands and their descriptions.
