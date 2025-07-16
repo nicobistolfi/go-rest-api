@@ -34,7 +34,7 @@ The following files in the `/deployments/serverless` directory are used for the 
 
 3. Deploy the application:
    ```bash
-   task deploy
+   task sls:deploy
    ```
 
    This command will package your application and deploy it to AWS Lambda using the Serverless Framework.
@@ -56,7 +56,7 @@ The `serverless.yml` file contains the configuration for your serverless deploym
 The `Taskfile.yml` provides the following commands:
 
 - `task build`: Compiles the Go application for AWS Lambda
-- `task deploy`: Deploys the application using Serverless Framework
+- `task sls:deploy`: Deploys the application using Serverless Framework
 - `task remove`: Removes the deployed application from AWS
 
 ## Customization

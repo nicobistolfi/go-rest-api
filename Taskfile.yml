@@ -2,7 +2,8 @@ version: '3'
 
 vars:
   BINARY_NAME: api
-  BUILD_DIR: build
+  BUILD_DIR: ./build
+  MAIN_FILE: ./cmd/api
   DOCKER_IMAGE: my-go-api
   VERSION:
     sh: echo ${VERSION:-0.0.1}
@@ -14,113 +15,217 @@ tasks:
       - task --list
 
   build:
-    desc: Compile the binary
+    desc: Build the application binary
     cmds:
-      - echo "  >  Building binary..."
-      - go build -o {{.BUILD_DIR}}/{{.BINARY_NAME}} ./cmd/api
+      - mkdir -p {{.BUILD_DIR}}
+      - go build -o {{.BUILD_DIR}}/{{.BINARY_NAME}} {{.MAIN_FILE}}
+    sources:
+      - ./**/*.go
+      - go.mod
+      - go.sum
+    generates:
+      - '{{.BUILD_DIR}}/{{.BINARY_NAME}}'
 
   run:
-    desc: Build and run the binary
+    desc: Run the application in production mode
     deps: [build]
     cmds:
-      - echo "  >  Running binary..."
-      - "{{.BUILD_DIR}}/{{.BINARY_NAME}}"
+      - '{{.BUILD_DIR}}/{{.BINARY_NAME}}'
+
+  dev:
+    desc: Run the application in development mode with hot reload (requires Air)
+    cmds:
+      - air
+    preconditions:
+      - sh: command -v air
+        msg: "Air is not installed. Please run: go install github.com/cosmtrek/air@latest"
+
+  dev:install:
+    desc: Install Air for development hot reload
+    cmds:
+      - go install github.com/cosmtrek/air@latest
 
   clean:
-    desc: Clean build files. Runs `go clean` internally
+    desc: Clean build artifacts
     cmds:
-      - echo "  >  Cleaning build cache"
-      - go clean
       - rm -rf {{.BUILD_DIR}}
+      - rm -f coverage.out coverage.html
 
   test:
-    desc: Run unit tests
+    desc: Run tests
     cmds:
-      - echo "  >  Running unit tests..."
-      - go test ./...
-
-  test:coverage:
-    desc: Run unit tests with coverage
-    cmds:
-      - echo "  >  Running unit tests with coverage..."
-      - go test ./... -coverprofile=coverage.out
-
-  dep:
-    desc: Get the dependencies
-    cmds:
-      - echo "  >  Ensuring dependencies are up to date..."
-      - go mod tidy
-
-  lint:
-    desc: Lint the code
-    cmds:
-      - echo "  >  Linting code..."
-      - golangci-lint run
-
-  docker:build:
-    desc: Build the docker image
-    cmds:
-      - echo "  >  Building docker image..."
-      - docker build -t {{.DOCKER_IMAGE}}:{{.VERSION}} -f deployments/docker/Dockerfile .
-
-  docker:run:
-    desc: Run the docker image
-    cmds:
-      - echo "  >  Running docker image..."
-      - docker run -p 8080:8080 {{.DOCKER_IMAGE}}:{{.VERSION}}
+      - go test -v ./...
 
   test:unit:
-    desc: Run unit tests in cmd, internal, and pkg folders
+    desc: Run unit tests in internal and pkg folders
     cmds:
-      - echo "  >  Running unit tests..."
-      - go test ./internal/... ./pkg/...
+      - go test -v ./internal/... ./pkg/...
+
+  test:coverage:
+    desc: Run tests with coverage
+    cmds:
+      - go test -coverprofile=coverage.out ./...
+      - go tool cover -html=coverage.out -o coverage.html
+      - echo "Coverage report generated at coverage.html"
 
   test:integration:
     desc: Run integration tests
     cmds:
-      - go test ./tests/integration
+      - go test -v ./tests/integration
+    preconditions:
+      - sh: test -d ./tests/integration
+        msg: "Integration tests directory not found"
 
   test:performance:
     desc: Run performance tests
     cmds:
       - go test -bench=. ./tests/performance
+    preconditions:
+      - sh: test -d ./tests/performance
+        msg: "Performance tests directory not found"
 
   test:security:
     desc: Run security tests
     cmds:
-      - go test ./tests/security
+      - go test -v ./tests/security
+    preconditions:
+      - sh: test -d ./tests/security
+        msg: "Security tests directory not found"
 
   test:e2e:
     desc: Run end-to-end tests
     cmds:
-      - go test ./tests/e2e
+      - go test -v ./tests/e2e
+    preconditions:
+      - sh: test -d ./tests/e2e
+        msg: "E2E tests directory not found"
 
   test:contract:
     desc: Run contract tests
     cmds:
-      - go test ./tests/contract
+      - go test -v ./tests/contract
+    preconditions:
+      - sh: test -d ./tests/contract
+        msg: "Contract tests directory not found"
 
   test:all:
-    desc: Run all tests
-    deps:
-      - test:unit
-      - test:integration
-      - test:performance
-      - test:security
-      - test:e2e
+    desc: Run all tests including unit, integration, performance, security, and e2e
+    cmds:
+      - task: test:unit
+      - task: test:integration
+      - task: test:performance
+      - task: test:security
+      - task: test:e2e
+
+  lint:
+    desc: Run linter
+    cmds:
+      - golangci-lint run
+    preconditions:
+      - sh: command -v golangci-lint
+        msg: "golangci-lint is not installed. See: https://golangci-lint.run/usage/install/"
+
+  mod:
+    desc: Download and tidy Go modules
+    cmds:
+      - go mod download
+      - go mod tidy
+
+  mod:update:
+    desc: Update Go modules
+    cmds:
+      - go get -u ./...
+      - go mod tidy
+
+  mod:verify:
+    desc: Verify Go module dependencies
+    cmds:
+      - go mod verify
+
+  fmt:
+    desc: Format Go code
+    cmds:
+      - gofmt -w -s .
+
+  fmt:check:
+    desc: Check if Go code is properly formatted
+    cmds:
+      - |
+        GOFMT_FILES=$(gofmt -l .)
+        if [ -n "$GOFMT_FILES" ]; then
+          echo "The following files need formatting:"
+          echo "$GOFMT_FILES"
+          echo "Run 'task fmt' to fix"
+          exit 1
+        fi
+        echo "All files are properly formatted"
+
+  vuln:check:
+    desc: Check for vulnerabilities using govulncheck
+    cmds:
+      - govulncheck ./...
+    preconditions:
+      - sh: command -v govulncheck
+        msg: "govulncheck is not installed. Please run: go install golang.org/x/vuln/cmd/govulncheck@latest"
+
+  docker:build:
+    desc: Build the docker image
+    cmds:
+      - docker build -t {{.DOCKER_IMAGE}}:{{.VERSION}} -f deployments/docker/Dockerfile .
+    sources:
+      - ./**/*.go
+      - go.mod
+      - go.sum
+      - deployments/docker/Dockerfile
+
+  docker:run:
+    desc: Run the docker image
+    deps: [docker:build]
+    cmds:
+      - docker run -p 8080:8080 {{.DOCKER_IMAGE}}:{{.VERSION}}
 
   docs:
+    desc: Generate API documentation (requires swag)
+    cmds:
+      - swag init -g {{.MAIN_FILE}}/main.go -o docs/swagger
+    preconditions:
+      - sh: command -v swag
+        msg: "Swag is not installed. Please run: go install github.com/swaggo/swag/cmd/swag@latest"
+
+  docs:serve:
     desc: Run the documentation server locally
     dir: docs
     cmds:
-      - echo "  >  Starting documentation server..."
-      - npm i
+      - npm install
       - npm start -- --port 3001
+    preconditions:
+      - sh: command -v npm
+        msg: "npm is not installed. Please install Node.js and npm"
 
   example:auth:
-    desc: Running example auth
+    desc: Run the authentication example
     dir: examples/auth
     cmds:
-      - echo " > Running example auth..."
-      - npm i
+      - npm install
       - npm run dev
+    preconditions:
+      - sh: command -v npm
+        msg: "npm is not installed. Please install Node.js and npm"
+
+  # Serverless deployment
+  sls:deploy:
+    desc: Deploy the application using Serverless Framework
+    dir: deployments/serverless
+    cmds:
+      - npm install
+      - npx serverless deploy
+    preconditions:
+      - sh: command -v npm
+        msg: "npm is not installed. Please install Node.js and npm"
+      - sh: test -f deployments/serverless/serverless.yml
+        msg: "serverless.yml not found in deployments/serverless"
+
+  # Aliases for backward compatibility
+  dep:
+    desc: Get the dependencies (alias for mod)
+    deps: [mod]
