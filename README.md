@@ -40,10 +40,10 @@ Comprehensive testing is essential for a reliable and secure API. The boilerplat
    ```
    5.1 _If you want to use other providers, you can do so by setting the `TOKEN_URL` environment variable to the provider's API URL and change `token.go` file to use the correct provider._
 
-6. Use the provided Makefile commands for common tasks:
-   - `make build`: Build the application
-   - `make test`: Run all tests
-   - `make run`: Run the application locally
+6. Use the provided Taskfile commands for common tasks:
+   - `task build`: Build the application
+   - `task test`: Run all tests
+   - `task run`: Run the application locally
 
 ## Documentation
 
@@ -51,7 +51,7 @@ To run the documentation locally:
 
 1. Run the following command:
 ```bash
-make docs
+task docs
 ```
 2. Open `http://localhost:3001` in your browser
 
@@ -94,7 +94,7 @@ go-rest-api/
 ├── .gitignore
 ├── go.mod
 ├── go.sum
-├── Makefile
+├── Taskfile.yml
 ├── LICENSE
 └── README.md
 ```
@@ -144,7 +144,7 @@ Project documentation, API specifications, and any other relevant documentation.
 #### Root Files
 - `.gitignore`: Specifies intentionally untracked files to ignore.
 - `go.mod` and `go.sum`: Go module files for dependency management.
-- `Makefile`: Defines commands for building, testing, and deploying the application.
+- `Taskfile.yml`: Defines commands for building, testing, and deploying the application.
 - `LICENSE`: Contains the MIT License text.
 - `README.md`: This file, providing an overview of the project structure.
 
