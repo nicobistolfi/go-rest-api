@@ -68,10 +68,6 @@ node_modules/
 *.yaml
 !deployments/kubernetes/*.yaml
 
-# Ignore all files in the cmd directory except main.go
-cmd/*
-!cmd/api/main.go
-
 # Ignore all files in internal except directories
 internal/*
 !internal/*/
