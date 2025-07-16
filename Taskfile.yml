@@ -225,6 +225,27 @@ tasks:
       - sh: test -f serverless.yml
         msg: "serverless.yml not found in deployments/serverless"
 
+  sls:remove:
+    desc: Remove the serverless deployment (with confirmation)
+    dir: deployments/serverless
+    cmds:
+      - |
+        echo "WARNING: This will remove the entire serverless deployment from AWS!"
+        echo "This action cannot be undone."
+        read -p "Are you sure you want to proceed? (y/N): " confirm
+        if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
+          echo "Removing serverless deployment..."
+          npx serverless remove
+        else
+          echo "Operation cancelled."
+          exit 1
+        fi
+    preconditions:
+      - sh: command -v npm
+        msg: "npm is not installed. Please install Node.js and npm"
+      - sh: test -f serverless.yml
+        msg: "serverless.yml not found in deployments/serverless"
+
   # Aliases for backward compatibility
   dep:
     desc: Get the dependencies (alias for mod)

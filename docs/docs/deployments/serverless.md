@@ -57,7 +57,7 @@ The `Taskfile.yml` provides the following commands:
 
 - `task build`: Compiles the Go application for AWS Lambda
 - `task sls:deploy`: Deploys the application using Serverless Framework
-- `task remove`: Removes the deployed application from AWS
+- `task sls:remove`: Removes the deployed application from AWS (with confirmation prompt)
 
 ## Customization
 

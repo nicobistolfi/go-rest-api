@@ -68,6 +68,7 @@ task docs:serve     # Start documentation server
 ### Serverless Deployment
 ```bash
 task sls:deploy     # Deploy using Serverless Framework
+task sls:remove     # Remove deployment (with confirmation)
 ```
 
 ## Quick Start Examples
