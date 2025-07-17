@@ -1,6 +1,6 @@
 module github.com/nicobistolfi/go-rest-api
 
-go 1.22.5
+go 1.24.5
 
 require (
 	github.com/aws/aws-lambda-go v1.47.0
