@@ -47,8 +47,8 @@ func TestAPIEndpoints(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Make a request to the test server
-			resp, err := http.Get(server.URL + tc.endpoint)
-			assert.NoError(t, err, "Failed to make request")
+			resp, reqErr := http.Get(server.URL + tc.endpoint)
+			assert.NoError(t, reqErr, "Failed to make request")
 
 			defer func() {
 				if closeErr := resp.Body.Close(); closeErr != nil {
@@ -60,12 +60,12 @@ func TestAPIEndpoints(t *testing.T) {
 			assert.Equal(t, tc.expectedStatus, resp.StatusCode, "Unexpected status code")
 
 			// Read and parse the response body
-			body, err := io.ReadAll(resp.Body)
-			assert.NoError(t, err, "Failed to read response body")
+			body, readErr := io.ReadAll(resp.Body)
+			assert.NoError(t, readErr, "Failed to read response body")
 
 			var responseBody map[string]string
-			err = json.Unmarshal(body, &responseBody)
-			assert.NoError(t, err, "Failed to parse response body")
+			parseErr := json.Unmarshal(body, &responseBody)
+			assert.NoError(t, parseErr, "Failed to parse response body")
 
 			// Check response body
 			assert.Equal(t, tc.expectedBody, responseBody, "Unexpected response body")

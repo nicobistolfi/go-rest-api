@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/gin-gonic/gin"
+	logger "github.com/nicobistolfi/go-rest-api/pkg"
 	zap "go.uber.org/zap"
 	"golang.org/x/time/rate"
 )

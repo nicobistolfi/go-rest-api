@@ -29,7 +29,8 @@ func TestAuthMiddlewareFunc(t *testing.T) {
 		expectedStatus int
 	}{
 		{"Valid Token", "Bearer valid_token", http.StatusOK},
-		{"Invalid Token", "Bearer invalid_token", http.StatusOK}, // This is expected to pass, as the auth only checks for the token presence
+		// This is expected to pass, as the auth only checks for the token presence
+		{"Invalid Token", "Bearer invalid_token", http.StatusOK},
 		{"No Token", "", http.StatusUnauthorized},
 	}
 

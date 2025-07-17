@@ -45,8 +45,8 @@ func main() {
 
 	// Graceful shutdown
 	go func() {
-		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			logger.Fatal("listen: %s\n", zap.Error(err))
+		if listenErr := srv.ListenAndServe(); listenErr != nil && !errors.Is(listenErr, http.ErrServerClosed) {
+			logger.Fatal("listen: %s\n", zap.Error(listenErr))
 		}
 	}()
 
@@ -58,8 +58,8 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	if err := srv.Shutdown(ctx); err != nil {
-		logger.Fatal("Server forced to shutdown:", zap.Error(err))
+	if shutdownErr := srv.Shutdown(ctx); shutdownErr != nil {
+		logger.Fatal("Server forced to shutdown:", zap.Error(shutdownErr))
 	}
 
 	logger.Info("Server exiting")

@@ -30,8 +30,9 @@ func GenerateJWT(secretKey []byte) (string, error) {
 		"user_id":  user.ID,
 		"username": user.Username,
 		"email":    user.Email,
-		"exp":      time.Now().Add(time.Minute * time.Duration(getJWTExpirationMinutes())).Unix(), // Token expires in 24 hours
-		"iat":      time.Now().Unix(),
+		// Token expires based on configured minutes
+		"exp": time.Now().Add(time.Minute * time.Duration(getJWTExpirationMinutes())).Unix(),
+		"iat": time.Now().Unix(),
 	}
 
 	// Create token

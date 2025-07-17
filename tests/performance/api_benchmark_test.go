@@ -28,9 +28,9 @@ func BenchmarkPingEndpoint(b *testing.B) {
 	b.ResetTimer()
 
 	for range b.N {
-		resp, err := http.Get(server.URL + "/api/v1/ping")
-		if err != nil {
-			b.Fatalf("Failed to make request: %v", err)
+		resp, pingErr := http.Get(server.URL + "/api/v1/ping")
+		if pingErr != nil {
+			b.Fatalf("Failed to make request: %v", pingErr)
 		}
 
 		resp.Body.Close()
@@ -57,9 +57,9 @@ func BenchmarkRateLimiting(b *testing.B) {
 	// for i := 0; i < b.N; i++ {
 	// Send multiple requests in quick succession
 	for j := range 11 {
-		resp, err := client.Get(server.URL + "/api/v1/ping")
-		if err != nil {
-			b.Fatalf("Failed to make request: %v", err)
+		resp, clientErr := client.Get(server.URL + "/api/v1/ping")
+		if clientErr != nil {
+			b.Fatalf("Failed to make request: %v", clientErr)
 		}
 
 		// Check if rate limiting is triggered (expecting 429 status code)

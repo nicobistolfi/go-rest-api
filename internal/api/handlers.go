@@ -1,12 +1,13 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
+	logger "github.com/nicobistolfi/go-rest-api/pkg"
 	"github.com/nicobistolfi/go-rest-api/pkg/auth" // Adjust this import path as needed
+	"go.uber.org/zap"
 )
 
 func GetToken(c *gin.Context) {
@@ -19,7 +20,7 @@ func GetToken(c *gin.Context) {
 
 	token, err := auth.GenerateJWT([]byte(secretKey))
 	if err != nil {
-		fmt.Printf("Error generating JWT: %v\n", err)
+		logger.Error("Error generating JWT", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
 
 		return
@@ -59,7 +60,7 @@ func Ping(c *gin.Context) {
 
 // Register handles the /register endpoint.
 func Register(c *gin.Context) {
-	// TODO: Implement user registration logic
+	// This is a placeholder implementation for user registration
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User registered successfully",
 	})

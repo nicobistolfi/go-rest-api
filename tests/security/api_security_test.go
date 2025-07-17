@@ -29,7 +29,8 @@ func TestAPISecurityEndpoints(t *testing.T) {
 	// Setup mock token server
 	mockTokenServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Authorization") == "valid_token" {
-			err := json.NewEncoder(w).Encode(map[string]string{"id": "123", "email": "test@example.com", "name": "Test User"})
+			testUser := map[string]string{"id": "123", "email": "test@example.com", "name": "Test User"}
+			err := json.NewEncoder(w).Encode(testUser)
 			if err != nil {
 				t.Errorf("Failed to encode JSON response: %v", err)
 				w.WriteHeader(http.StatusInternalServerError)

@@ -30,8 +30,8 @@ func TestServiceContract(t *testing.T) {
 	// Test the /ping endpoint
 	t.Run("Ping Endpoint", func(t *testing.T) {
 		// Make a GET request to the /ping endpoint
-		resp, err := http.Get(server.URL + "/api/v1/ping")
-		assert.NoError(t, err, "Failed to make request to /api/v1/ping")
+		resp, pingErr := http.Get(server.URL + "/api/v1/ping")
+		assert.NoError(t, pingErr, "Failed to make request to /api/v1/ping")
 
 		defer func() {
 			if closeErr := resp.Body.Close(); closeErr != nil {
