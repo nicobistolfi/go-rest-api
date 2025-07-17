@@ -1,0 +1,458 @@
+name: Build & Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GOLANG_VERSION: 1.22.5
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  check-label:
+    name: Check Required Label
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    outputs:
+      should-run: ${{ steps.check.outputs.should-run }}
+      should-run-e2e: ${{ steps.check.outputs.should-run-e2e }}
+    steps:
+      - name: Check for run-checks label
+        id: check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const labels = context.payload.pull_request.labels.map(label => label.name);
+            const hasRunChecks = labels.includes('run-checks');
+            const hasE2ETest = labels.includes('e2e-test');
+
+            console.log('PR labels:', labels);
+            console.log('Has run-checks label:', hasRunChecks);
+            console.log('Has e2e-test label:', hasE2ETest);
+
+            // Remove checks-passed label if it exists (we'll re-add it if checks pass)
+            if (labels.includes('checks-passed')) {
+              console.log('Removing checks-passed label');
+              await github.rest.issues.removeLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                name: 'checks-passed'
+              });
+            }
+
+            core.setOutput('should-run', hasRunChecks.toString());
+            core.setOutput('should-run-e2e', hasE2ETest.toString());
+
+            if (!hasRunChecks) {
+              console.log('Skipping checks - run-checks label not found');
+            }
+            if (!hasE2ETest) {
+              console.log('Skipping E2E tests - e2e-test label not found');
+            }
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [check-label]
+    if: github.event_name == 'push' || needs.check-label.outputs.should-run == 'true'
+    strategy:
+      matrix:
+        go-version: ["1.22.5"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/go-setup
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Cache build artifacts
+        uses: actions/cache@v4
+        with:
+          path: build/
+          key: build-${{ runner.os }}-${{ github.sha }}-${{ hashFiles('**/*.go') }}
+          restore-keys: |
+            build-${{ runner.os }}-${{ github.sha }}-
+            build-${{ runner.os }}-
+
+      - name: Verify dependencies
+        run: task mod:verify
+
+      - name: Check formatting
+        run: task fmt:check
+
+      - name: Build
+        run: task build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: build/
+          retention-days: 1
+
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: [build, lint]
+    if: always() && !cancelled() && (needs.build.result == 'success' && needs.lint.result == 'success')
+    strategy:
+      matrix:
+        go-version: ["1.22.5"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/go-setup
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Cache test results
+        uses: actions/cache@v4
+        with:
+          path: |
+            coverage.out
+            coverage.html
+          key: test-coverage-${{ runner.os }}-${{ github.sha }}-${{ hashFiles('**/*.go', '**/*_test.go') }}
+          restore-keys: |
+            test-coverage-${{ runner.os }}-${{ github.sha }}-
+            test-coverage-${{ runner.os }}-
+
+      - name: Run unit tests
+        run: task test:unit
+
+      - name: Run tests with coverage
+        run: task test:coverage
+
+      - name: Run integration tests
+        run: task test:integration
+
+      - name: Run performance tests
+        run: task test:performance
+
+      - name: Run security tests
+        run: task test:security
+
+      - name: Run contract tests
+        run: task test:contract
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-artifacts
+          path: |
+            coverage.out
+            coverage.html
+          retention-days: 7
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    needs: [check-label]
+    if: github.event_name == 'push' || needs.check-label.outputs.should-run == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/go-setup
+        with:
+          go-version: "${{ env.GOLANG_VERSION }}"
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.61.0
+          args: --timeout=5m --skip-dirs=docs,examples,deployments/serverless
+
+  vulnerability-check:
+    name: Vulnerability Check
+    runs-on: ubuntu-latest
+    needs: [build, lint]
+    if: always() && !cancelled() && (needs.build.result == 'success' && needs.lint.result == 'success')
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/go-setup
+        with:
+          go-version: "${{ env.GOLANG_VERSION }}"
+
+      - name: Cache govulncheck
+        uses: actions/cache@v4
+        with:
+          path: ~/go/bin/govulncheck
+          key: govulncheck-${{ runner.os }}-v1.1.3
+          restore-keys: |
+            govulncheck-${{ runner.os }}-
+
+      - name: Install govulncheck
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@v1.1.3
+
+      - name: Cache vulnerability database
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/go-build
+          key: vuln-db-${{ runner.os }}-${{ hashFiles('go.sum') }}
+          restore-keys: |
+            vuln-db-${{ runner.os }}-
+
+      - name: Run vulnerability check
+        run: task vuln:check
+
+  docker-build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    needs: [build, lint]
+    if: always() && !cancelled() && (needs.build.result == 'success' && needs.lint.result == 'success')
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/go-setup
+        with:
+          go-version: "${{ env.GOLANG_VERSION }}"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        run: task docker:build
+
+      - name: Test Docker image
+        run: |
+          # Start container in background
+          docker run -d --name test-api -p 8080:8080 my-go-api:0.0.1
+          
+          # Wait for container to be ready
+          sleep 10
+          
+          # Test health endpoint
+          curl -f http://localhost:8080/api/v1/health || exit 1
+          
+          # Cleanup
+          docker stop test-api
+          docker rm test-api
+
+  e2e-test:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: [check-label, build, lint]
+    if: always() && !cancelled() && (needs.build.result == 'success' && needs.lint.result == 'success') && (github.event_name == 'push' || needs.check-label.outputs.should-run-e2e == 'true')
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - uses: ./.github/actions/go-setup
+      with:
+        go-version: "${{ env.GOLANG_VERSION }}"
+
+    - name: Cache Minikube
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.minikube/cache
+          ~/.minikube/bin
+        key: minikube-${{ runner.os }}-v1.28.0
+        restore-keys: |
+          minikube-${{ runner.os }}-
+
+    - name: Start Minikube
+      uses: medyagh/setup-minikube@latest
+      id: minikube
+      with:
+        driver: docker
+        kubernetes-version: 'v1.28.0'
+        memory: 4096m
+        cpus: 2
+
+    - name: Configure kubectl for Minikube
+      run: |
+        kubectl config use-context minikube
+        kubectl cluster-info
+
+    - name: Build and load Docker image to Minikube
+      run: |
+        # Build image
+        task docker:build
+        
+        # Load image to Minikube
+        minikube image load my-go-api:0.0.1
+
+    - name: Deploy to Kubernetes
+      run: |
+        # Apply Kubernetes manifests
+        kubectl apply -f deployments/kubernetes/
+        
+        # Wait for deployment to be ready
+        kubectl wait --for=condition=available --timeout=300s deployment/go-rest-api
+        
+        # Port forward for testing
+        kubectl port-forward service/go-rest-api 8080:8080 &
+        
+        # Wait for port forward to be ready
+        sleep 5
+
+    - name: Run E2E Tests with Task
+      run: task test:e2e
+
+    - name: Gather Minikube Logs (on failure)
+      if: failure()
+      run: |
+        echo "E2E tests failed. Collecting logs..."
+        minikube logs --file minikube-logs.txt
+        kubectl get all -A > kubectl-all.txt
+        kubectl describe pods -A > kubectl-describe-pods.txt
+        kubectl get namespaces | grep e2e-test > e2e-namespaces.txt || true
+        # Get logs from any e2e test pods if they exist
+        for ns in $(kubectl get namespaces -o name | grep e2e-test | cut -d/ -f2); do
+          echo "Logs for namespace: $ns" >> e2e-pod-logs.txt
+          kubectl logs -n $ns --all-containers=true --tail=100 >> e2e-pod-logs.txt || true
+        done
+        # Get logs from main deployment
+        kubectl logs -l app=go-rest-api --tail=100 > app-logs.txt || true
+
+    - name: Upload Logs (on failure)
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: minikube-e2e-logs
+        path: |
+          minikube-logs.txt
+          kubectl-all.txt
+          kubectl-describe-pods.txt
+          e2e-namespaces.txt
+          e2e-pod-logs.txt
+          app-logs.txt
+        retention-days: 5
+
+  quality-check-summary:
+    name: Quality Check Summary
+    runs-on: ubuntu-latest
+    needs: [check-label, build, test, lint, vulnerability-check, docker-build, e2e-test]
+    if: always() && github.event_name == 'pull_request' && needs.check-label.outputs.should-run == 'true'
+    steps:
+      - name: Post Quality Check Results
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            // Find all bot comments with the quality check header
+            const botComments = comments.filter(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('## 🚀 Go REST API Quality Check')
+            );
+
+            // Delete all previous quality check comments
+            for (const comment of botComments) {
+              await github.rest.issues.deleteComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: comment.id,
+              });
+            }
+
+            const buildStatus = '${{ needs.build.result }}';
+            const testStatus = '${{ needs.test.result }}';
+            const lintStatus = '${{ needs.lint.result }}';
+            const vulnStatus = '${{ needs.vulnerability-check.result }}';
+            const dockerStatus = '${{ needs.docker-build.result }}';
+            const e2eStatus = '${{ needs.e2e-test.result }}';
+            const shouldRunE2E = '${{ needs.check-label.outputs.should-run-e2e }}' === 'true';
+
+            console.log('Job statuses:', { buildStatus, testStatus, lintStatus, vulnStatus, dockerStatus, e2eStatus, shouldRunE2E });
+
+            let statusEmoji = '✅';
+            let statusText = 'All quality checks passed!';
+
+            // Only consider E2E status if E2E tests were supposed to run
+            const requiredChecks = [buildStatus, testStatus, lintStatus, vulnStatus, dockerStatus];
+            if (shouldRunE2E) {
+              requiredChecks.push(e2eStatus);
+            }
+
+            if (requiredChecks.some(status => status !== 'success')) {
+              statusEmoji = '❌';
+              statusText = 'Some quality checks failed.';
+            }
+
+            // Build the E2E test row conditionally
+            let e2eRow = '';
+            if (shouldRunE2E) {
+              e2eRow = `| **E2E Tests** | ${e2eStatus === 'success' ? '✅ Kubernetes integration verified' : '❌ E2E test failures'} |`;
+            } else {
+              e2eRow = `| **E2E Tests** | ⏭️ Skipped (add \`e2e-test\` label to run) |`;
+            }
+
+            const body = `## 🚀 Go REST API Quality Check
+
+            ${statusEmoji} **Status**: ${statusText}
+
+            ### Quality Summary
+
+            | Check | Status |
+            |-------|--------|
+            | **Build** | ${buildStatus === 'success' ? '✅ Application builds successfully' : '❌ Build failures detected'} |
+            | **Unit Tests** | ${testStatus === 'success' ? '✅ All test suites pass (unit, integration, performance, security, contract)' : '❌ Test failures detected'} |
+            | **Code Quality** | ${lintStatus === 'success' ? '✅ golangci-lint clean' : '❌ Linting issues detected'} |
+            | **Docker Build** | ${dockerStatus === 'success' ? '✅ Docker image builds and runs successfully' : '❌ Docker build issues'} |
+            ${e2eRow}
+            | **Security** | ${vulnStatus === 'success' ? '✅ No known vulnerabilities detected' : '❌ Security vulnerabilities found'} |
+
+            ${statusEmoji === '✅' ? '### 🎉 Your Go REST API is ready for production!' : '### ⚠️ Please address the failing checks above.'}
+
+            <details>
+            <summary>View detailed results</summary>
+
+            #### Task Commands Used:
+            - **Build**: \`task build\` (with \`task fmt:check\` and \`task mod:verify\`)
+            - **Tests**: \`task test:unit\`, \`task test:integration\`, \`task test:performance\`, \`task test:security\`, \`task test:contract\`, \`task test:coverage\`
+            - **Lint**: \`golangci-lint run\` with timeout=5m
+            - **Docker**: \`task docker:build\` + container health check
+            - **E2E**: \`task test:e2e\` on Minikube with Kubernetes deployment
+            - **Security**: \`task vuln:check\` using govulncheck
+
+            #### Job Results:
+            - **Build**: ${buildStatus}
+            - **Unit Tests**: ${testStatus}
+            - **Lint**: ${lintStatus}
+            - **Docker Build**: ${dockerStatus}
+            - **E2E Tests**: ${shouldRunE2E ? e2eStatus : 'skipped (e2e-test label not present)'}
+            - **Vulnerability Check**: ${vulnStatus}
+
+            </details>
+
+            ---
+            <sub>🤖 This comment is automatically updated on each workflow run. | Built with Go ${process.env.GOLANG_VERSION}</sub>`;
+
+            // Always create a new comment
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
+
+            // Add checks-passed label if all enabled checks succeeded
+            if (statusEmoji === '✅') {
+              console.log('All enabled checks passed - adding checks-passed label');
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: ['checks-passed']
+              });
+            }
