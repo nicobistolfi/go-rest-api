@@ -171,7 +171,7 @@ jobs:
         uses: golangci/golangci-lint-action@v6
         with:
           version: v1.61.0
-          args: --timeout=5m --skip-dirs=docs,examples,deployments/serverless
+          args: --timeout=5m
 
   vulnerability-check:
     name: Vulnerability Check

@@ -99,8 +99,7 @@ linters-settings:
     nolintlint:
       require-specific: true
     predeclared:
-      ignore:
-        - copy
+      ignore: "copy"
     revive:
       confidence: 0.8
       rules:
@@ -226,4 +225,9 @@ output:
   show-stats: false
 run:
   allow-parallel-runners: true
+  timeout: 5m
+  skip-dirs:
+    - docs
+    - examples  
+    - deployments/serverless
   build-tags:
