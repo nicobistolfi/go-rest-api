@@ -29,7 +29,7 @@ func TestLoggerMiddlewareFunc(t *testing.T) {
 	})
 
 	// Create a test request
-	req, _ := http.NewRequest("GET", "/test", nil)
+	req, _ := http.NewRequest(http.MethodGet, "/test", nil)
 	resp := httptest.NewRecorder()
 
 	// Serve the request
@@ -39,7 +39,6 @@ func TestLoggerMiddlewareFunc(t *testing.T) {
 	if resp.Code != http.StatusOK {
 		t.Errorf("Expected status %d; got %d", http.StatusOK, resp.Code)
 	}
-
 	// Add more assertions here to check logging behavior
 	// For example, you could use a custom io.Writer to capture log output
 	// and assert on its contents

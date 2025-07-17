@@ -125,6 +125,14 @@ tasks:
       - sh: command -v golangci-lint
         msg: "golangci-lint is not installed. See: https://golangci-lint.run/usage/install/"
 
+  lint:fix:
+    desc: Run linter with automatic fixes
+    cmds:
+      - golangci-lint run --fix
+    preconditions:
+      - sh: command -v golangci-lint
+        msg: "golangci-lint is not installed. See: https://golangci-lint.run/usage/install/"
+
   mod:
     desc: Download and tidy Go modules
     cmds:

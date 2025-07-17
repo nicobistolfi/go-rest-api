@@ -35,10 +35,11 @@ func TestAuthMiddlewareFunc(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req, _ := http.NewRequest("GET", "/protected", nil)
+			req, _ := http.NewRequest(http.MethodGet, "/protected", nil)
 			if tt.token != "" {
 				req.Header.Set("Authorization", tt.token)
 			}
+
 			resp := httptest.NewRecorder()
 
 			r.ServeHTTP(resp, req)

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net/http"
 	"os"
@@ -9,11 +10,10 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/nicobistolfi/go-rest-api/internal/api"
 	"github.com/nicobistolfi/go-rest-api/internal/config"
 	logger "github.com/nicobistolfi/go-rest-api/pkg"
-
-	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
@@ -35,7 +35,7 @@ func main() {
 	api.SetupRouter(r, cfg, logger.Log)
 
 	// Create a new server with timeouts
-	srv := &http.Server{
+	srv := &http.Server{ //nolint:exhaustruct // Optional fields not needed
 		Addr:         ":8080",
 		Handler:      r,
 		ReadTimeout:  5 * time.Second,
@@ -45,7 +45,7 @@ func main() {
 
 	// Graceful shutdown
 	go func() {
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logger.Fatal("listen: %s\n", zap.Error(err))
 		}
 	}()
@@ -57,6 +57,7 @@ func main() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
+
 	if err := srv.Shutdown(ctx); err != nil {
 		logger.Fatal("Server forced to shutdown:", zap.Error(err))
 	}

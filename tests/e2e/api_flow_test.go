@@ -6,17 +6,16 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/gin-gonic/gin"
 	"github.com/nicobistolfi/go-rest-api/internal/api"
 	"github.com/nicobistolfi/go-rest-api/internal/config"
-
-	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
-
 	logger "github.com/nicobistolfi/go-rest-api/pkg"
+	"github.com/stretchr/testify/assert"
 )
 
 func setupTestRouter() *gin.Engine {
 	gin.SetMode(gin.TestMode)
+
 	cfg := &config.Config{
 		JWTSecret:   "test_secret",
 		ValidAPIKey: "test_api_key",
@@ -34,6 +33,7 @@ func setupTestRouter() *gin.Engine {
 	})
 
 	api.SetupRouter(r, cfg, logger.Log)
+
 	return r
 }
 
@@ -49,7 +49,12 @@ func TestAPIFlow(t *testing.T) {
 	t.Run("Ping", func(t *testing.T) {
 		resp, err := http.Get(server.URL + "/api/v1/ping")
 		assert.NoError(t, err)
-		defer resp.Body.Close()
+
+		defer func() {
+			if closeErr := resp.Body.Close(); closeErr != nil {
+				t.Logf("Failed to close response body: %v", closeErr)
+			}
+		}()
 
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 
@@ -63,7 +68,12 @@ func TestAPIFlow(t *testing.T) {
 	t.Run("Health Check", func(t *testing.T) {
 		resp, err := http.Get(server.URL + "/api/v1/health")
 		assert.NoError(t, err)
-		defer resp.Body.Close()
+
+		defer func() {
+			if closeErr := resp.Body.Close(); closeErr != nil {
+				t.Logf("Failed to close response body: %v", closeErr)
+			}
+		}()
 
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 
@@ -72,22 +82,24 @@ func TestAPIFlow(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, "OK", response["status"])
 	})
-
 	// Additional tests for authenticated routes can be added here
 	// You'll need to generate valid tokens/keys for each auth method
 	// and include them in the request headers
-
 	/*
 		// Example: Test JWT authenticated route
 		t.Run("JWT Authenticated Route", func(t *testing.T) {
 			// Generate a valid JWT token
-			token := generateValidJWTToken()
+			:= generateValidJWTToken()
 
 			req, _ := http.NewRequest("GET", server.URL+"/api/v1/jwt/profile", nil)
 			req.Header.Set("Authorization", "Bearer "+token)
 			resp, err := http.DefaultClient.Do(req)
 			assert.NoError(t, err)
-			defer resp.Body.Close()
+			defer func() {
+			if closeErr := resp.Body.Close(); closeErr != nil {
+				t.Logf("Failed to close response body: %v", closeErr)
+			}
+		}()
 
 			assert.Equal(t, http.StatusOK, resp.StatusCode)
 

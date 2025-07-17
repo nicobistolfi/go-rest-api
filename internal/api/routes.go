@@ -3,12 +3,10 @@ package api
 import (
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/nicobistolfi/go-rest-api/internal/api/middleware"
 	"github.com/nicobistolfi/go-rest-api/internal/config"
-
 	logger "github.com/nicobistolfi/go-rest-api/pkg"
-
-	"github.com/gin-gonic/gin"
 	"golang.org/x/time/rate"
 )
 
@@ -25,7 +23,7 @@ func WithoutRateLimiting() RouterOption {
 }
 
 func SetupRouter(router *gin.Engine, cfg *config.Config, logger *logger.Logger, opts ...RouterOption) {
-	options := &routerOptions{}
+	options := &routerOptions{} //nolint:exhaustruct // Fields set by options pattern
 	for _, opt := range opts {
 		opt(options)
 	}

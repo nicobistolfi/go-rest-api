@@ -7,13 +7,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/gin-gonic/gin"
 	"github.com/nicobistolfi/go-rest-api/internal/api"
 	"github.com/nicobistolfi/go-rest-api/internal/config"
-
-	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
-
 	logger "github.com/nicobistolfi/go-rest-api/pkg"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAPIEndpoints(t *testing.T) {
@@ -22,6 +20,7 @@ func TestAPIEndpoints(t *testing.T) {
 	assert.NoError(t, err, "Failed to load configuration")
 
 	logger.Init()
+
 	r := gin.New()
 	api.SetupRouter(r, cfg, logger.Log)
 
@@ -50,7 +49,12 @@ func TestAPIEndpoints(t *testing.T) {
 			// Make a request to the test server
 			resp, err := http.Get(server.URL + tc.endpoint)
 			assert.NoError(t, err, "Failed to make request")
-			defer resp.Body.Close()
+
+			defer func() {
+				if closeErr := resp.Body.Close(); closeErr != nil {
+					t.Logf("Failed to close response body: %v", closeErr)
+				}
+			}()
 
 			// Check status code
 			assert.Equal(t, tc.expectedStatus, resp.StatusCode, "Unexpected status code")

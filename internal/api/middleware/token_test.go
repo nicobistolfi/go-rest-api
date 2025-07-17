@@ -21,7 +21,9 @@ func TestVerifyToken(t *testing.T) {
 				Email: "test@example.com",
 				Name:  "Test User",
 			}
-			json.NewEncoder(w).Encode(profile)
+			if err := json.NewEncoder(w).Encode(profile); err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+			}
 		} else {
 			w.WriteHeader(http.StatusUnauthorized)
 		}
@@ -29,7 +31,12 @@ func TestVerifyToken(t *testing.T) {
 	defer mockServer.Close()
 
 	os.Setenv("TOKEN_URL", mockServer.URL)
-	defer os.Unsetenv("TOKEN_URL")
+
+	defer func() {
+		if err := os.Unsetenv("TOKEN_URL"); err != nil { //nolint:staticcheck // Empty test cleanup is acceptable
+			// Ignore error in test cleanup
+		}
+	}()
 
 	r := gin.New()
 	r.Use(func(c *gin.Context) {
@@ -55,10 +62,11 @@ func TestVerifyToken(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req, _ := http.NewRequest("GET", "/test", nil)
+			req, _ := http.NewRequest(http.MethodGet, "/test", nil)
 			if tt.token != "" {
 				req.Header.Set("Authorization", tt.token)
 			}
+
 			resp := httptest.NewRecorder()
 			r.ServeHTTP(resp, req)
 
@@ -68,7 +76,10 @@ func TestVerifyToken(t *testing.T) {
 
 			if tt.expectedStatus == http.StatusOK {
 				var profile Profile
-				json.NewDecoder(resp.Body).Decode(&profile)
+				if err := json.NewDecoder(resp.Body).Decode(&profile); err != nil {
+					t.Errorf("Failed to decode response: %v", err)
+				}
+
 				if profile.ID != "123" || profile.Email != "test@example.com" || profile.Name != "Test User" {
 					t.Errorf("Unexpected profile data")
 				}

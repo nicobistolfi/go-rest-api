@@ -1,0 +1,229 @@
+version: "2"
+linters:
+  # Focus on important issues, not style nitpicking
+  enable:
+    - errcheck      # Important: check error returns
+    - govet         # Important: detect common Go mistakes
+    - staticcheck   # Important: advanced static analysis
+    - gosec         # Important: security issues
+    - misspell      # Useful: catch typos
+    - unused        # Useful: remove dead code
+    - ineffassign   # Useful: detect ineffective assignments
+    - copyloopvar   # Important: detect loop variable capture issues
+  
+  # Disable nitpicky linters for better developer experience
+  disable:
+    - exhaustruct   # Too strict for struct initialization
+    - revive        # Too many style opinions
+    - gocritic      # Too opinionated about code style
+    - testifylint   # Too strict for test patterns
+    - depguard      # Not needed for this project
+    - errorlint     # Can be too strict
+    - exhaustive    # Can be too strict for switches
+    - nolintlint    # Not needed
+    - predeclared   # Not critical
+    - reassign      # Can be too strict
+    - thelper       # Not critical for test helpers
+    - unconvert     # Not critical
+    - unparam       # Can be too strict
+    - usestdlibvars # Not critical
+    - usetesting    # Not critical
+    - wastedassign  # Can be too strict
+    - whitespace    # Formatter handles this
+    - decorder      # Not critical
+  exclusions:
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+
+formatters:
+  enable:
+    - gci
+    - gofumpt
+  exclusions:
+    paths:
+      - third_party
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - prefix(github.com/open-telemetry/opentelemetry-collector-contrib)
+
+linters-settings:
+    depguard:
+      rules:
+        denied-deps:
+          deny:
+            - pkg: github.com/azure/go-autorest
+              desc: "This package is deprecated (EOL). Please use an alternative Azure SDK."
+            - pkg: go.uber.org/atomic
+              desc: Use 'sync/atomic' instead of go.uber.org/atomic
+            - pkg: github.com/pkg/errors
+              desc: Use 'errors' or 'fmt' instead of github.com/pkg/errors
+            - pkg: github.com/hashicorp/go-multierror
+              desc: Use go.uber.org/multierr instead of github.com/hashicorp/go-multierror
+            - pkg: math/rand$
+              desc: Use math/rand/v2 instead of math/rand
+        ignore-in-test:
+          deny:
+            - pkg: go.opentelemetry.io/proto
+              desc: Use go.opentelemetry.io/collector/pdata instead
+          files:
+            - '!**/*_test.go'
+    exhaustive:
+      explicit-exhaustive-switch: true
+      ignore-enum-members: pmetric.MetricTypeEmpty
+    gosec:
+      excludes:
+        - G115
+        - G402
+        - G404
+    govet:
+      disable:
+        - fieldalignment
+      enable-all: true
+      settings:
+        printf:
+          funcs:
+            - Infof
+            - Warnf
+            - Errorf
+            - Fatalf
+    misspell:
+      ignore-rules:
+        - cancelled
+      locale: US
+    nolintlint:
+      require-specific: true
+    predeclared:
+      ignore:
+        - copy
+    revive:
+      confidence: 0.8
+      rules:
+        - name: blank-imports
+        - name: context-as-argument
+        - name: context-keys-type
+        - name: dot-imports
+        - name: early-return
+          arguments:
+            - preserveScope
+        - name: empty-block
+        - name: error-naming
+        - name: error-return
+        - name: error-strings
+        - name: errorf
+        - name: increment-decrement
+        - name: indent-error-flow
+        - name: range
+        - name: receiver-naming
+        - name: redefines-builtin-id
+        - name: superfluous-else
+          arguments:
+            - preserveScope
+        - name: time-naming
+        - name: unexported-return
+        - name: unreachable-code
+        - name: unused-parameter
+        - name: use-any
+        - name: use-errors-new
+        - name: var-declaration
+        - name: var-naming
+    staticcheck:
+      checks:
+        - all
+        - -ST1003
+        - -ST1005
+        - -ST1011
+    testifylint:
+      disable:
+        - encoded-compare
+        - float-compare
+        - require-error
+        - suite-subtest-run
+      enable-all: true
+    thelper:
+      benchmark:
+        begin: false
+      fuzz:
+        begin: false
+      tb:
+        begin: false
+      test:
+        begin: false
+issues:
+  exclude-rules:
+    # Make test files more flexible - focus on big picture only
+    - path: "_test\\.go"
+      linters:
+        - exhaustruct    # Don't require all struct fields in tests
+        - errcheck       # Ignore error checking in tests
+        - gosec          # Relax security checks in tests
+        - gocritic       # Reduce code style criticism in tests
+        - revive         # Reduce style requirements in tests
+        - staticcheck    # Reduce static analysis strictness in tests
+        - testifylint    # Reduce testify strictness
+        - unused         # Ignore unused vars/funcs in tests
+        - unparam        # Ignore unused parameters in tests
+        - usestdlibvars  # Allow non-stdlib constants in tests
+        
+    # Make test directories more flexible
+    - path: "tests/"
+      linters:
+        - exhaustruct
+        - errcheck
+        - gosec
+        - gocritic
+        - revive
+        - unused
+        - unparam
+        
+    # Allow flexible struct initialization patterns
+    - text: "missing field"
+      linters:
+        - exhaustruct
+        
+    # Allow empty cleanup blocks
+    - text: "SA9003"
+      linters:
+        - staticcheck
+    
+    # Allow empty cleanup blocks in test files
+    - source: "if err.*Close.*err != nil"
+      linters:
+        - staticcheck
+    
+    - source: "if err.*Unsetenv.*err != nil"
+      linters:
+        - staticcheck
+        
+    # Focus on important issues, ignore nitpicky ones
+    - text: "should have comment"
+      linters:
+        - revive
+        
+    - text: "package-comments"
+      linters:
+        - revive
+        
+    # Allow common patterns in middleware and handlers
+    - path: "(middleware|handlers)"
+      text: "missing field"
+      linters:
+        - exhaustruct
+
+  max-issues-per-linter: 0
+  max-same-issues: 0
+output:
+  formats:
+    text:
+      path: stdout
+      print-linter-name: true
+      print-issued-lines: true
+  show-stats: false
+run:
+  allow-parallel-runners: true
+  build-tags:

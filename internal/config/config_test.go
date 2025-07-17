@@ -8,9 +8,18 @@ import (
 
 func TestLoadConfig(t *testing.T) {
 	// Set up test environment variables
-	os.Setenv("OIDC_ISSUER", "https://test.issuer.com")
-	os.Setenv("OAUTH_CLIENT_ID", "test_client_id")
-	os.Setenv("OAUTH_CLIENT_SECRET", "test_client_secret")
+	if err := os.Setenv("OIDC_ISSUER", "https://test.issuer.com"); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := os.Setenv("OAUTH_CLIENT_ID", "test_client_id"); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := os.Setenv("OAUTH_CLIENT_SECRET", "test_client_secret"); err != nil {
+		t.Fatal(err)
+	}
+
 	os.Setenv("OAUTH_REDIRECT_URL", "http://test.redirect.url")
 	os.Setenv("JWT_SECRET", "test_jwt_secret")
 	os.Setenv("JWT_EXPIRATION_MINUTES", "120")
@@ -20,7 +29,6 @@ func TestLoadConfig(t *testing.T) {
 
 	// Load the configuration
 	config, err := LoadConfig()
-
 	// Check for errors
 	if err != nil {
 		t.Fatalf("LoadConfig() returned an error: %v", err)
@@ -55,6 +63,7 @@ func TestLoadConfig(t *testing.T) {
 func TestGetEnv(t *testing.T) {
 	// Test with existing environment variable
 	os.Setenv("TEST_ENV_VAR", "test_value")
+
 	if got := getEnv("TEST_ENV_VAR", "default"); got != "test_value" {
 		t.Errorf("getEnv() = %v, want %v", got, "test_value")
 	}
@@ -68,12 +77,14 @@ func TestGetEnv(t *testing.T) {
 func TestGetEnvAsInt(t *testing.T) {
 	// Test with valid integer
 	os.Setenv("TEST_INT_VAR", "42")
+
 	if got := getEnvAsInt("TEST_INT_VAR", 0); got != 42 {
 		t.Errorf("getEnvAsInt() = %v, want %v", got, 42)
 	}
 
 	// Test with invalid integer
 	os.Setenv("TEST_INVALID_INT", "not_an_int")
+
 	if got := getEnvAsInt("TEST_INVALID_INT", 10); got != 10 {
 		t.Errorf("getEnvAsInt() = %v, want %v", got, 10)
 	}
@@ -82,12 +93,14 @@ func TestGetEnvAsInt(t *testing.T) {
 func TestGetEnvAsDuration(t *testing.T) {
 	// Test with valid duration
 	os.Setenv("TEST_DURATION_VAR", "5m")
+
 	if got := getEnvAsDuration("TEST_DURATION_VAR", time.Second); got != 5*time.Minute {
 		t.Errorf("getEnvAsDuration() = %v, want %v", got, 5*time.Minute)
 	}
 
 	// Test with invalid duration
 	os.Setenv("TEST_INVALID_DURATION", "not_a_duration")
+
 	if got := getEnvAsDuration("TEST_INVALID_DURATION", time.Hour); got != time.Hour {
 		t.Errorf("getEnvAsDuration() = %v, want %v", got, time.Hour)
 	}

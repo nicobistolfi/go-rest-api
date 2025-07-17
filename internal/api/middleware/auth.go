@@ -9,6 +9,7 @@ import (
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var token string
+
 		var authHeader string
 
 		// Check for Authorization header
@@ -31,6 +32,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		if token == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication token is required"})
 			c.Abort()
+
 			return
 		}
 

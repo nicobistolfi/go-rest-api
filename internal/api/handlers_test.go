@@ -8,9 +8,8 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
-
 	"github.com/nicobistolfi/go-rest-api/internal/api/middleware"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetToken(t *testing.T) {
@@ -22,7 +21,7 @@ func TestGetToken(t *testing.T) {
 	os.Setenv("JWT_EXPIRATION_MINUTES", "1")
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/token", nil)
+	req, _ := http.NewRequest(http.MethodGet, "/token", nil)
 	r.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
@@ -43,7 +42,7 @@ func TestGetProfile(t *testing.T) {
 	r.GET("/profile", GetProfile)
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/profile", nil)
+	req, _ := http.NewRequest(http.MethodGet, "/profile", nil)
 
 	r.ServeHTTP(w, req)
 
@@ -63,7 +62,7 @@ func TestHealthCheck(t *testing.T) {
 	r.GET("/health", HealthCheck)
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/health", nil)
+	req, _ := http.NewRequest(http.MethodGet, "/health", nil)
 	r.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
@@ -80,7 +79,7 @@ func TestPing(t *testing.T) {
 	r.GET("/ping", Ping)
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/ping", nil)
+	req, _ := http.NewRequest(http.MethodGet, "/ping", nil)
 	r.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
@@ -97,7 +96,7 @@ func TestRegister(t *testing.T) {
 	r.POST("/register", Register)
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("POST", "/register", nil)
+	req, _ := http.NewRequest(http.MethodPost, "/register", nil)
 	r.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)

@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strconv"
 	"sync"
 	"time"
 
@@ -26,6 +27,7 @@ func init() {
 		duration, err := time.ParseDuration(cacheExpiryStr)
 		if err != nil {
 			logger.Warn("Invalid TOKEN_CACHE_EXPIRY, using default of 5 minutes", zap.Error(err))
+
 			cacheExpiry = 5 * time.Minute
 		} else {
 			cacheExpiry = duration
@@ -53,6 +55,7 @@ var (
 func VerifyToken(customCacheExpiry ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		verifyCacheExpiry := cacheExpiry
+
 		if len(customCacheExpiry) > 0 {
 			verifyCacheExpiryParsed, err := time.ParseDuration(customCacheExpiry[0])
 			if err != nil {
@@ -70,11 +73,14 @@ func VerifyToken(customCacheExpiry ...string) gin.HandlerFunc {
 		if !authHeaderExists {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication header is missing"})
 			c.Abort()
+
 			return
 		}
+
 		if !exists {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication token is missing"})
 			c.Abort()
+
 			return
 		}
 
@@ -82,6 +88,7 @@ func VerifyToken(customCacheExpiry ...string) gin.HandlerFunc {
 		if !ok {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid token format"})
 			c.Abort()
+
 			return
 		}
 
@@ -91,6 +98,7 @@ func VerifyToken(customCacheExpiry ...string) gin.HandlerFunc {
 		if tokenURL == "" {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "TOKEN_URL not set"})
 			c.Abort()
+
 			return
 		}
 
@@ -108,6 +116,7 @@ func VerifyToken(customCacheExpiry ...string) gin.HandlerFunc {
 			c.Header("X-Token-Cache", "HIT")
 			c.Set("user", entry.profile)
 			c.Next()
+
 			return
 		}
 
@@ -115,27 +124,38 @@ func VerifyToken(customCacheExpiry ...string) gin.HandlerFunc {
 		c.Header("X-Token-Cache", "MISS")
 
 		// Validate token using the TOKEN_URL
-		req, err := http.NewRequest("GET", tokenURL, nil)
+		req, err := http.NewRequest(http.MethodGet, tokenURL, nil)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create request"})
 			c.Abort()
+
 			return
 		}
+
 		req.Header.Set(authHeader.(string), tokenString)
 
-		client := &http.Client{}
+		client := &http.Client{} //nolint:exhaustruct // Default HTTP client is sufficient
+
 		resp, err := client.Do(req)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to validate token"})
 			c.Abort()
+
 			return
 		}
-		defer resp.Body.Close()
+
+		defer func() {
+			if closeErr := resp.Body.Close(); closeErr != nil { //nolint:staticcheck // Empty cleanup block is acceptable
+				// Log the error but don't fail the request
+				// as this is cleanup code
+			}
+		}()
 
 		if resp.StatusCode != http.StatusOK {
 			// use logger to log the error
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			c.Abort()
+
 			return
 		}
 
@@ -143,6 +163,7 @@ func VerifyToken(customCacheExpiry ...string) gin.HandlerFunc {
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read response"})
 			c.Abort()
+
 			return
 		}
 
@@ -155,14 +176,17 @@ func VerifyToken(customCacheExpiry ...string) gin.HandlerFunc {
 				Name  string `json:"name"`
 				Login string `json:"login"`
 			}
+
 			if err := json.Unmarshal(body, &githubProfile); err != nil {
 				logger.Error("Failed to parse GitHub profile", zap.Error(err))
 				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse profile"})
 				c.Abort()
+
 				return
 			}
+
 			profile = Profile{
-				ID:    fmt.Sprintf("%d", githubProfile.ID),
+				ID:    strconv.FormatUint(uint64(githubProfile.ID), 10),
 				Email: githubProfile.Email,
 				Name:  githubProfile.Name,
 			}

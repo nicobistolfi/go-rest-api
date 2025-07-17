@@ -5,11 +5,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/gin-gonic/gin"
 	"github.com/nicobistolfi/go-rest-api/internal/api"
 	"github.com/nicobistolfi/go-rest-api/internal/config"
-
-	"github.com/gin-gonic/gin"
-
 	logger "github.com/nicobistolfi/go-rest-api/pkg"
 )
 
@@ -23,15 +21,18 @@ func BenchmarkPingEndpoint(b *testing.B) {
 
 	router := gin.New()
 	api.SetupRouter(router, cfg, logger.Log, api.WithoutRateLimiting())
+
 	server := httptest.NewServer(router)
 	defer server.Close()
 
 	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+
+	for range b.N {
 		resp, err := http.Get(server.URL + "/api/v1/ping")
 		if err != nil {
 			b.Fatalf("Failed to make request: %v", err)
 		}
+
 		resp.Body.Close()
 	}
 }
@@ -55,7 +56,7 @@ func BenchmarkRateLimiting(b *testing.B) {
 	b.ResetTimer()
 	// for i := 0; i < b.N; i++ {
 	// Send multiple requests in quick succession
-	for j := 0; j < 11; j++ {
+	for j := range 11 {
 		resp, err := client.Get(server.URL + "/api/v1/ping")
 		if err != nil {
 			b.Fatalf("Failed to make request: %v", err)

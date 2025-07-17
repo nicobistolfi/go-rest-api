@@ -7,20 +7,21 @@ import (
 	"os"
 	"testing"
 
+	"github.com/gin-gonic/gin"
 	"github.com/nicobistolfi/go-rest-api/internal/api"
 	"github.com/nicobistolfi/go-rest-api/internal/config"
-
-	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
-
 	logger "github.com/nicobistolfi/go-rest-api/pkg"
+	"github.com/stretchr/testify/assert"
 )
 
 func setupRouter() *gin.Engine {
 	cfg, _ := config.LoadConfig()
+
 	logger.Init()
+
 	r := gin.New()
 	api.SetupRouter(r, cfg, logger.Log)
+
 	return r
 }
 
@@ -32,6 +33,7 @@ func TestAPISecurityEndpoints(t *testing.T) {
 			if err != nil {
 				t.Errorf("Failed to encode JSON response: %v", err)
 				w.WriteHeader(http.StatusInternalServerError)
+
 				return
 			}
 		} else {
@@ -66,6 +68,7 @@ func TestAPISecurityEndpoints(t *testing.T) {
 			if tc.token != "" {
 				req.Header.Set("Authorization", tc.token)
 			}
+
 			w := httptest.NewRecorder()
 			router.ServeHTTP(w, req)
 

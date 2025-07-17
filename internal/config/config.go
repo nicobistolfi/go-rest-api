@@ -56,6 +56,7 @@ func getEnv(key, defaultValue string) string {
 	if value, exists := os.LookupEnv(key); exists {
 		return value
 	}
+
 	return defaultValue
 }
 
@@ -64,6 +65,7 @@ func getEnvAsInt(key string, defaultValue int) int {
 	if value, err := strconv.Atoi(valueStr); err == nil {
 		return value
 	}
+
 	return defaultValue
 }
 
@@ -72,5 +74,6 @@ func getEnvAsDuration(key string, defaultValue time.Duration) time.Duration {
 	if value, err := time.ParseDuration(valueStr); err == nil {
 		return value
 	}
+
 	return defaultValue
 }
