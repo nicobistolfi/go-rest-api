@@ -33,9 +33,7 @@ func TestVerifyToken(t *testing.T) {
 	os.Setenv("TOKEN_URL", mockServer.URL)
 
 	defer func() {
-		if err := os.Unsetenv("TOKEN_URL"); err != nil { //nolint:staticcheck // Empty test cleanup is acceptable
-			// Ignore error in test cleanup
-		}
+		_ = os.Unsetenv("TOKEN_URL") // Ignore error in test cleanup
 	}()
 
 	r := gin.New()

@@ -14,6 +14,11 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	defaultCacheExpiry = 5 * time.Minute
+	schemeOffset       = 3
+)
+
 // TokenValidator handles token validation with caching.
 type TokenValidator struct {
 	logger      *zap.Logger
@@ -27,12 +32,12 @@ func NewTokenValidator(logger *zap.Logger) *TokenValidator {
 	cacheExpiryStr := os.Getenv("TOKEN_CACHE_EXPIRY")
 	var cacheExpiry time.Duration
 	if cacheExpiryStr == "" {
-		cacheExpiry = 5 * time.Minute
+		cacheExpiry = defaultCacheExpiry
 	} else {
 		duration, err := time.ParseDuration(cacheExpiryStr)
 		if err != nil {
 			logger.Warn("Invalid TOKEN_CACHE_EXPIRY, using default of 5 minutes", zap.Error(err))
-			cacheExpiry = 5 * time.Minute
+			cacheExpiry = defaultCacheExpiry
 		} else {
 			cacheExpiry = duration
 		}
@@ -298,7 +303,7 @@ func stringContains(s, substr string) bool {
 	// Check each possible starting position.
 	for i := 0; i <= len(s)-len(substr); i++ {
 		match := true
-		for j := 0; j < len(substr); j++ {
+		for j := range len(substr) {
 			if s[i+j] != substr[j] {
 				match = false
 
@@ -390,9 +395,9 @@ func ExtractPort(url string) string {
 func GetBaseURL(url string) string {
 	// Find where the path starts (first / after ://).
 	schemeEnd := -1
-	for i := 0; i < len(url)-2; i++ {
+	for i := range len(url) - 2 {
 		if url[i] == ':' && url[i+1] == '/' && url[i+2] == '/' {
-			schemeEnd = i + 3
+			schemeEnd = i + schemeOffset
 
 			break
 		}

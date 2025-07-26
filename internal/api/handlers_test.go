@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/nicobistolfi/go-rest-api/internal/api/middleware"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetToken(t *testing.T) {
@@ -28,7 +29,7 @@ func TestGetToken(t *testing.T) {
 
 	var response map[string]string
 	err := json.Unmarshal(w.Body.Bytes(), &response)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Contains(t, response, "token")
 }
 
@@ -50,7 +51,7 @@ func TestGetProfile(t *testing.T) {
 
 	var response middleware.Profile
 	err := json.Unmarshal(w.Body.Bytes(), &response)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "1", response.ID)
 	assert.Equal(t, "test@example.com", response.Email)
 	assert.Equal(t, "Test User", response.Name)
@@ -69,7 +70,7 @@ func TestHealthCheck(t *testing.T) {
 
 	var response map[string]string
 	err := json.Unmarshal(w.Body.Bytes(), &response)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "OK", response["status"])
 }
 
@@ -86,7 +87,7 @@ func TestPing(t *testing.T) {
 
 	var response map[string]string
 	err := json.Unmarshal(w.Body.Bytes(), &response)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "pong", response["message"])
 }
 
@@ -103,6 +104,6 @@ func TestRegister(t *testing.T) {
 
 	var response map[string]string
 	err := json.Unmarshal(w.Body.Bytes(), &response)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "User registered successfully", response["message"])
 }

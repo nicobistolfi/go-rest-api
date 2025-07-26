@@ -17,6 +17,13 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	readTimeout      = 5 * time.Second
+	writeTimeout     = 10 * time.Second
+	idleTimeout      = 120 * time.Second
+	shutdownTimeout  = 5 * time.Second
+)
+
 func main() {
 	logger.Init()
 
@@ -38,9 +45,9 @@ func main() {
 	srv := &http.Server{ //nolint:exhaustruct // Optional fields not needed
 		Addr:         ":8080",
 		Handler:      r,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
-		IdleTimeout:  120 * time.Second,
+		ReadTimeout:  readTimeout,
+		WriteTimeout: writeTimeout,
+		IdleTimeout:  idleTimeout,
 	}
 
 	// Graceful shutdown
@@ -55,7 +62,7 @@ func main() {
 	<-quit
 	logger.Info("Shutting down server...")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer cancel()
 
 	if shutdownErr := srv.Shutdown(ctx); shutdownErr != nil {

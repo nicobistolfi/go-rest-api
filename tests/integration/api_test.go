@@ -12,12 +12,13 @@ import (
 	"github.com/nicobistolfi/go-rest-api/internal/config"
 	logger "github.com/nicobistolfi/go-rest-api/pkg"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAPIEndpoints(t *testing.T) {
 	// Setup the router
 	cfg, err := config.LoadConfig()
-	assert.NoError(t, err, "Failed to load configuration")
+	require.NoError(t, err, "Failed to load configuration")
 
 	logger.Init()
 
@@ -48,7 +49,7 @@ func TestAPIEndpoints(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			// Make a request to the test server
 			resp, reqErr := http.Get(server.URL + tc.endpoint)
-			assert.NoError(t, reqErr, "Failed to make request")
+			require.NoError(t, reqErr, "Failed to make request")
 
 			defer func() {
 				if closeErr := resp.Body.Close(); closeErr != nil {
@@ -61,11 +62,11 @@ func TestAPIEndpoints(t *testing.T) {
 
 			// Read and parse the response body
 			body, readErr := io.ReadAll(resp.Body)
-			assert.NoError(t, readErr, "Failed to read response body")
+			require.NoError(t, readErr, "Failed to read response body")
 
 			var responseBody map[string]string
 			parseErr := json.Unmarshal(body, &responseBody)
-			assert.NoError(t, parseErr, "Failed to parse response body")
+			require.NoError(t, parseErr, "Failed to parse response body")
 
 			// Check response body
 			assert.Equal(t, tc.expectedBody, responseBody, "Unexpected response body")

@@ -11,6 +11,7 @@ import (
 	"github.com/nicobistolfi/go-rest-api/internal/config"
 	logger "github.com/nicobistolfi/go-rest-api/pkg"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func setupTestRouter() *gin.Engine {
@@ -48,7 +49,7 @@ func TestAPIFlow(t *testing.T) {
 	// Step 1: Ping
 	t.Run("Ping", func(t *testing.T) {
 		resp, err := http.Get(server.URL + "/api/v1/ping")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		defer func() {
 			if closeErr := resp.Body.Close(); closeErr != nil {
@@ -60,14 +61,14 @@ func TestAPIFlow(t *testing.T) {
 
 		var response map[string]string
 		err = json.NewDecoder(resp.Body).Decode(&response)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "pong", response["message"])
 	})
 
 	// Step 2: Health Check
 	t.Run("Health Check", func(t *testing.T) {
 		resp, err := http.Get(server.URL + "/api/v1/health")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		defer func() {
 			if closeErr := resp.Body.Close(); closeErr != nil {
@@ -79,7 +80,7 @@ func TestAPIFlow(t *testing.T) {
 
 		var response map[string]string
 		err = json.NewDecoder(resp.Body).Decode(&response)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "OK", response["status"])
 	})
 	// Additional tests for authenticated routes can be added here
@@ -94,7 +95,7 @@ func TestAPIFlow(t *testing.T) {
 			req, _ := http.NewRequest("GET", server.URL+"/api/v1/jwt/profile", nil)
 			req.Header.Set("Authorization", "Bearer "+token)
 			resp, err := http.DefaultClient.Do(req)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			defer func() {
 			if closeErr := resp.Body.Close(); closeErr != nil {
 				t.Logf("Failed to close response body: %v", closeErr)
@@ -105,7 +106,7 @@ func TestAPIFlow(t *testing.T) {
 
 			var profile api.ProfileResponse
 			err = json.NewDecoder(resp.Body).Decode(&profile)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.NotEmpty(t, profile.ID)
 			assert.NotEmpty(t, profile.Email)
 		})

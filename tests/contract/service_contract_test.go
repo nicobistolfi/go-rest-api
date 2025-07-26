@@ -11,12 +11,13 @@ import (
 	"github.com/nicobistolfi/go-rest-api/internal/config"
 	logger "github.com/nicobistolfi/go-rest-api/pkg"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestServiceContract(t *testing.T) {
 	// Setup the router
 	cfg, err := config.LoadConfig()
-	assert.NoError(t, err, "Failed to load configuration")
+	require.NoError(t, err, "Failed to load configuration")
 
 	logger.Init()
 
@@ -31,7 +32,7 @@ func TestServiceContract(t *testing.T) {
 	t.Run("Ping Endpoint", func(t *testing.T) {
 		// Make a GET request to the /ping endpoint
 		resp, pingErr := http.Get(server.URL + "/api/v1/ping")
-		assert.NoError(t, pingErr, "Failed to make request to /api/v1/ping")
+		require.NoError(t, pingErr, "Failed to make request to /api/v1/ping")
 
 		defer func() {
 			if closeErr := resp.Body.Close(); closeErr != nil {
@@ -45,7 +46,7 @@ func TestServiceContract(t *testing.T) {
 		// Check the response body
 		var response map[string]string
 		err = json.NewDecoder(resp.Body).Decode(&response)
-		assert.NoError(t, err, "Failed to decode response body")
+		require.NoError(t, err, "Failed to decode response body")
 		assert.Equal(t, "pong", response["message"], "Unexpected response message for/api/v1/ping")
 	})
 	// Add more contract tests for other endpoints here as they are implemented

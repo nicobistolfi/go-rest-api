@@ -8,6 +8,11 @@ import (
 	"github.com/joho/godotenv"
 )
 
+const (
+	defaultJWTExpirationMinutes = 60
+	defaultRateLimitRequests    = 10
+)
+
 type Config struct {
 	// OAuth configuration
 	OIDCIssuer        string
@@ -41,11 +46,11 @@ func LoadConfig() (*Config, error) {
 		OAuthRedirectURL:  getEnv("OAUTH_REDIRECT_URL", "http://localhost:8080/auth/callback"),
 
 		JWTSecret:            getEnv("JWT_SECRET", "default_jwt_secret"),
-		JWTExpirationMinutes: getEnvAsInt("JWT_EXPIRATION_MINUTES", 60),
+		JWTExpirationMinutes: getEnvAsInt("JWT_EXPIRATION_MINUTES", defaultJWTExpirationMinutes),
 
 		ValidAPIKey: getEnv("VALID_API_KEY", "default_api_key"),
 
-		RateLimitRequests: getEnvAsInt("RATE_LIMIT_REQUESTS", 10),
+		RateLimitRequests: getEnvAsInt("RATE_LIMIT_REQUESTS", defaultRateLimitRequests),
 		RateLimitDuration: getEnvAsDuration("RATE_LIMIT_DURATION", time.Second),
 	}
 

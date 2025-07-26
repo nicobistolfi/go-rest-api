@@ -17,7 +17,7 @@ func TestGenerateJWT(t *testing.T) {
 	}
 
 	// Parse and validate the token
-	parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
+	parsedToken, err := jwt.Parse(token, func(_ *jwt.Token) (interface{}, error) {
 		return secretKey, nil
 	})
 	if err != nil {
@@ -60,9 +60,7 @@ func TestGenerateJWT(t *testing.T) {
 
 func TestGetJWTExpirationMinutes(t *testing.T) {
 	// Test default value
-	if err := os.Unsetenv("JWT_EXPIRATION_MINUTES"); err != nil { //nolint:staticcheck // Empty test cleanup is acceptable
-		// Ignore error in test cleanup
-	}
+	_ = os.Unsetenv("JWT_EXPIRATION_MINUTES") // Ignore error in test cleanup
 
 	if exp := getJWTExpirationMinutes(); exp != 1440 {
 		t.Errorf("Expected default expiration 1440, got %d", exp)
@@ -83,7 +81,5 @@ func TestGetJWTExpirationMinutes(t *testing.T) {
 	}
 
 	// Clean up
-	if err := os.Unsetenv("JWT_EXPIRATION_MINUTES"); err != nil { //nolint:staticcheck // Empty test cleanup is acceptable
-		// Ignore error in test cleanup
-	}
+	_ = os.Unsetenv("JWT_EXPIRATION_MINUTES") // Ignore error in test cleanup
 }

@@ -10,6 +10,10 @@ import (
 	"golang.org/x/time/rate"
 )
 
+const (
+	authHeaderMaskLength = 15
+)
+
 func RateLimiter(r rate.Limit, b int, keyPrefixes ...string) gin.HandlerFunc {
 	type client struct {
 		limiter  *rate.Limiter
@@ -59,8 +63,8 @@ func RateLimiter(r rate.Limit, b int, keyPrefixes ...string) gin.HandlerFunc {
 
 			if authHeader != "" {
 				maskedAuth = "Bearer *****"
-				if len(authHeader) > 15 {
-					maskedAuth = authHeader[:15] + "*****"
+				if len(authHeader) > authHeaderMaskLength {
+					maskedAuth = authHeader[:authHeaderMaskLength] + "*****"
 				}
 			}
 
