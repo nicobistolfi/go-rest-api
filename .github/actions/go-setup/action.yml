@@ -1,0 +1,46 @@
+name: 'Go Setup'
+description: 'Setup Go environment with caching and task installation'
+inputs:
+  go-version:
+    description: 'Go version to install'
+    required: true
+    default: '1.22.5'
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ inputs.go-version }}
+        cache: true
+        cache-dependency-path: |
+          go.sum
+          go.mod
+
+    - name: Cache Task binary
+      uses: actions/cache@v4
+      with:
+        path: ~/go/bin/task
+        key: task-${{ runner.os }}-v3.39.2
+        restore-keys: |
+          task-${{ runner.os }}-
+
+    - name: Install Task
+      shell: bash
+      run: |
+        if ! command -v task &> /dev/null; then
+          echo "Installing Task..."
+          go install github.com/go-task/task/v3/cmd/task@v3.39.2
+        else
+          echo "Task already installed"
+        fi
+
+    - name: Add Go bin to PATH
+      shell: bash
+      run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+    - name: Verify Task installation
+      shell: bash
+      run: |
+        task --version
+        task --list

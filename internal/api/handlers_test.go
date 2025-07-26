@@ -8,9 +8,9 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
-
 	"github.com/nicobistolfi/go-rest-api/internal/api/middleware"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetToken(t *testing.T) {
@@ -22,14 +22,14 @@ func TestGetToken(t *testing.T) {
 	os.Setenv("JWT_EXPIRATION_MINUTES", "1")
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/token", nil)
+	req, _ := http.NewRequest(http.MethodGet, "/token", nil)
 	r.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
 
 	var response map[string]string
 	err := json.Unmarshal(w.Body.Bytes(), &response)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Contains(t, response, "token")
 }
 
@@ -43,7 +43,7 @@ func TestGetProfile(t *testing.T) {
 	r.GET("/profile", GetProfile)
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/profile", nil)
+	req, _ := http.NewRequest(http.MethodGet, "/profile", nil)
 
 	r.ServeHTTP(w, req)
 
@@ -51,7 +51,7 @@ func TestGetProfile(t *testing.T) {
 
 	var response middleware.Profile
 	err := json.Unmarshal(w.Body.Bytes(), &response)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "1", response.ID)
 	assert.Equal(t, "test@example.com", response.Email)
 	assert.Equal(t, "Test User", response.Name)
@@ -63,14 +63,14 @@ func TestHealthCheck(t *testing.T) {
 	r.GET("/health", HealthCheck)
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/health", nil)
+	req, _ := http.NewRequest(http.MethodGet, "/health", nil)
 	r.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
 
 	var response map[string]string
 	err := json.Unmarshal(w.Body.Bytes(), &response)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "OK", response["status"])
 }
 
@@ -80,14 +80,14 @@ func TestPing(t *testing.T) {
 	r.GET("/ping", Ping)
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/ping", nil)
+	req, _ := http.NewRequest(http.MethodGet, "/ping", nil)
 	r.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
 
 	var response map[string]string
 	err := json.Unmarshal(w.Body.Bytes(), &response)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "pong", response["message"])
 }
 
@@ -97,13 +97,13 @@ func TestRegister(t *testing.T) {
 	r.POST("/register", Register)
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("POST", "/register", nil)
+	req, _ := http.NewRequest(http.MethodPost, "/register", nil)
 	r.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
 
 	var response map[string]string
 	err := json.Unmarshal(w.Body.Bytes(), &response)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "User registered successfully", response["message"])
 }

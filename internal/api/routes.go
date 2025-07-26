@@ -3,13 +3,15 @@ package api
 import (
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/nicobistolfi/go-rest-api/internal/api/middleware"
 	"github.com/nicobistolfi/go-rest-api/internal/config"
-
 	logger "github.com/nicobistolfi/go-rest-api/pkg"
-
-	"github.com/gin-gonic/gin"
 	"golang.org/x/time/rate"
+)
+
+const (
+	defaultRateLimit = 10 // requests per second
 )
 
 type RouterOption func(*routerOptions)
@@ -24,8 +26,8 @@ func WithoutRateLimiting() RouterOption {
 	}
 }
 
-func SetupRouter(router *gin.Engine, cfg *config.Config, logger *logger.Logger, opts ...RouterOption) {
-	options := &routerOptions{}
+func SetupRouter(router *gin.Engine, _ *config.Config, logger *logger.Logger, opts ...RouterOption) {
+	options := &routerOptions{} //nolint:exhaustruct // Fields set by options pattern
 	for _, opt := range opts {
 		opt(options)
 	}
@@ -39,7 +41,7 @@ func SetupRouter(router *gin.Engine, cfg *config.Config, logger *logger.Logger, 
 		logger.Info("Rate limiting is disabled")
 	} else {
 		// Apply rate limiting middleware
-		router.Use(middleware.RateLimiter(rate.Every(time.Second), 10)) // 10 requests per second
+		router.Use(middleware.RateLimiter(rate.Every(time.Second), defaultRateLimit))
 	}
 
 	// Public routes

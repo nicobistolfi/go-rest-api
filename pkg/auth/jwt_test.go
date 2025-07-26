@@ -17,10 +17,9 @@ func TestGenerateJWT(t *testing.T) {
 	}
 
 	// Parse and validate the token
-	parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
+	parsedToken, err := jwt.Parse(token, func(_ *jwt.Token) (interface{}, error) {
 		return secretKey, nil
 	})
-
 	if err != nil {
 		t.Fatalf("Failed to parse JWT: %v", err)
 	}
@@ -38,9 +37,11 @@ func TestGenerateJWT(t *testing.T) {
 	if claims["user_id"] != "123456" {
 		t.Errorf("Expected user_id '123456', got '%v'", claims["user_id"])
 	}
+
 	if claims["username"] != "user" {
 		t.Errorf("Expected username 'user', got '%v'", claims["username"])
 	}
+
 	if claims["email"] != "@example.com" {
 		t.Errorf("Expected email '@example.com', got '%v'", claims["email"])
 	}
@@ -50,6 +51,7 @@ func TestGenerateJWT(t *testing.T) {
 	if !ok {
 		t.Fatalf("Failed to get expiration time from token")
 	}
+
 	expectedExp := time.Now().Add(time.Minute * time.Duration(getJWTExpirationMinutes())).Unix()
 	if int64(exp) != expectedExp {
 		t.Errorf("Expected expiration time %v, got %v", expectedExp, int64(exp))
@@ -58,23 +60,26 @@ func TestGenerateJWT(t *testing.T) {
 
 func TestGetJWTExpirationMinutes(t *testing.T) {
 	// Test default value
-	os.Unsetenv("JWT_EXPIRATION_MINUTES")
+	_ = os.Unsetenv("JWT_EXPIRATION_MINUTES") // Ignore error in test cleanup
+
 	if exp := getJWTExpirationMinutes(); exp != 1440 {
 		t.Errorf("Expected default expiration 1440, got %d", exp)
 	}
 
 	// Test custom value
 	os.Setenv("JWT_EXPIRATION_MINUTES", "60")
+
 	if exp := getJWTExpirationMinutes(); exp != 60 {
 		t.Errorf("Expected expiration 60, got %d", exp)
 	}
 
 	// Test invalid value
 	os.Setenv("JWT_EXPIRATION_MINUTES", "invalid")
+
 	if exp := getJWTExpirationMinutes(); exp != 1440 {
 		t.Errorf("Expected default expiration 1440 for invalid input, got %d", exp)
 	}
 
 	// Clean up
-	os.Unsetenv("JWT_EXPIRATION_MINUTES")
+	_ = os.Unsetenv("JWT_EXPIRATION_MINUTES") // Ignore error in test cleanup
 }

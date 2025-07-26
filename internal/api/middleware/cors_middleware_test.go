@@ -59,6 +59,7 @@ func TestCORSMiddlewareFunc(t *testing.T) {
 			os.Setenv("ALLOWED_ORIGINS", tt.origin)
 			req, _ := http.NewRequest(tt.method, "/test", nil)
 			req.Header.Set("Origin", tt.origin)
+
 			resp := httptest.NewRecorder()
 
 			r.ServeHTTP(resp, req)

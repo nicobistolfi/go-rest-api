@@ -13,6 +13,7 @@ import (
 
 func TestInit(t *testing.T) {
 	Init()
+
 	if Log == nil {
 		t.Error("Log should not be nil after Init()")
 	}
@@ -54,6 +55,7 @@ func TestLoggerMethods(t *testing.T) {
 			if logEntry["level"] != tt.expected {
 				t.Errorf("Expected log level %s, got %s", tt.expected, logEntry["level"])
 			}
+
 			if logEntry["msg"] != tt.message {
 				t.Errorf("Expected message %s, got %s", tt.message, logEntry["msg"])
 			}

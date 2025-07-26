@@ -5,8 +5,13 @@ import (
 	"sync"
 
 	"github.com/gin-gonic/gin"
+	logger "github.com/nicobistolfi/go-rest-api/pkg"
 	zap "go.uber.org/zap"
 	"golang.org/x/time/rate"
+)
+
+const (
+	authHeaderMaskLength = 15
 )
 
 func RateLimiter(r rate.Limit, b int, keyPrefixes ...string) gin.HandlerFunc {
@@ -28,6 +33,7 @@ func RateLimiter(r rate.Limit, b int, keyPrefixes ...string) gin.HandlerFunc {
 			// get the first X-Real-Ip header
 			key = c.GetHeader("X-Real-Ip")
 		}
+
 		if key == "" {
 			// get the first X-Forwarded-For header
 			key = c.GetHeader("X-Forwarded-For")
@@ -44,23 +50,29 @@ func RateLimiter(r rate.Limit, b int, keyPrefixes ...string) gin.HandlerFunc {
 
 		mu.Lock()
 		if _, found := clients[key]; !found {
-			clients[key] = &client{limiter: rate.NewLimiter(r, b)}
+			clients[key] = &client{ //nolint:exhaustruct // lastSeen will be set on first use
+				limiter: rate.NewLimiter(r, b),
+			}
 		}
+
 		if !clients[key].limiter.Allow() {
 			mu.Unlock()
 			// Log the rate limit exceeded event
 			authHeader := c.GetHeader("Authorization")
 			maskedAuth := "No Authorization"
+
 			if authHeader != "" {
 				maskedAuth = "Bearer *****"
-				if len(authHeader) > 15 {
-					maskedAuth = authHeader[:15] + "*****"
+				if len(authHeader) > authHeaderMaskLength {
+					maskedAuth = authHeader[:authHeaderMaskLength] + "*****"
 				}
 			}
+
 			logger.Info("Rate limit exceeded",
 				zap.String("client_ip", c.ClientIP()),
 				zap.String("authorization", maskedAuth))
 			c.AbortWithStatus(http.StatusTooManyRequests)
+
 			return
 		}
 		mu.Unlock()

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net/http"
 	"os"
@@ -9,12 +10,18 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/nicobistolfi/go-rest-api/internal/api"
 	"github.com/nicobistolfi/go-rest-api/internal/config"
 	logger "github.com/nicobistolfi/go-rest-api/pkg"
-
-	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+)
+
+const (
+	readTimeout      = 5 * time.Second
+	writeTimeout     = 10 * time.Second
+	idleTimeout      = 120 * time.Second
+	shutdownTimeout  = 5 * time.Second
 )
 
 func main() {
@@ -35,18 +42,18 @@ func main() {
 	api.SetupRouter(r, cfg, logger.Log)
 
 	// Create a new server with timeouts
-	srv := &http.Server{
+	srv := &http.Server{ //nolint:exhaustruct // Optional fields not needed
 		Addr:         ":8080",
 		Handler:      r,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
-		IdleTimeout:  120 * time.Second,
+		ReadTimeout:  readTimeout,
+		WriteTimeout: writeTimeout,
+		IdleTimeout:  idleTimeout,
 	}
 
 	// Graceful shutdown
 	go func() {
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			logger.Fatal("listen: %s\n", zap.Error(err))
+		if listenErr := srv.ListenAndServe(); listenErr != nil && !errors.Is(listenErr, http.ErrServerClosed) {
+			logger.Fatal("listen: %s\n", zap.Error(listenErr))
 		}
 	}()
 
@@ -55,10 +62,11 @@ func main() {
 	<-quit
 	logger.Info("Shutting down server...")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer cancel()
-	if err := srv.Shutdown(ctx); err != nil {
-		logger.Fatal("Server forced to shutdown:", zap.Error(err))
+
+	if shutdownErr := srv.Shutdown(ctx); shutdownErr != nil {
+		logger.Fatal("Server forced to shutdown:", zap.Error(shutdownErr))
 	}
 
 	logger.Info("Server exiting")

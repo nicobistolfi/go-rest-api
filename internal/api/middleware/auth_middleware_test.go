@@ -29,16 +29,18 @@ func TestAuthMiddlewareFunc(t *testing.T) {
 		expectedStatus int
 	}{
 		{"Valid Token", "Bearer valid_token", http.StatusOK},
-		{"Invalid Token", "Bearer invalid_token", http.StatusOK}, // This is expected to pass, as the auth only checks for the token presence
+		// This is expected to pass, as the auth only checks for the token presence
+		{"Invalid Token", "Bearer invalid_token", http.StatusOK},
 		{"No Token", "", http.StatusUnauthorized},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req, _ := http.NewRequest("GET", "/protected", nil)
+			req, _ := http.NewRequest(http.MethodGet, "/protected", nil)
 			if tt.token != "" {
 				req.Header.Set("Authorization", tt.token)
 			}
+
 			resp := httptest.NewRecorder()
 
 			r.ServeHTTP(resp, req)

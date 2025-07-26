@@ -33,8 +33,8 @@ func TestRateLimiter(t *testing.T) {
 				c.String(http.StatusOK, "test")
 			})
 
-			for i := 0; i < tt.requests; i++ {
-				req, _ := http.NewRequest("GET", "/test", nil)
+			for i := range tt.requests {
+				req, _ := http.NewRequest(http.MethodGet, "/test", nil)
 				resp := httptest.NewRecorder()
 				r.ServeHTTP(resp, req)
 
@@ -64,8 +64,9 @@ func TestRateLimiterWithDifferentClients(t *testing.T) {
 	clients := []string{"1.1.1.1", "2.2.2.2"}
 
 	for _, client := range clients {
-		req, _ := http.NewRequest("GET", "/test", nil)
+		req, _ := http.NewRequest(http.MethodGet, "/test", nil)
 		req.Header.Set("X-Forwarded-For", client)
+
 		resp := httptest.NewRecorder()
 		r.ServeHTTP(resp, req)
 
@@ -84,8 +85,9 @@ func TestRateLimiterWithAuthHeader(t *testing.T) {
 		c.String(http.StatusOK, "test")
 	})
 
-	req, _ := http.NewRequest("GET", "/test", nil)
+	req, _ := http.NewRequest(http.MethodGet, "/test", nil)
 	req.Header.Set("Authorization", "Bearer token1")
+
 	resp := httptest.NewRecorder()
 	r.ServeHTTP(resp, req)
 
@@ -94,8 +96,9 @@ func TestRateLimiterWithAuthHeader(t *testing.T) {
 	}
 
 	// Same IP, different token
-	req, _ = http.NewRequest("GET", "/test", nil)
+	req, _ = http.NewRequest(http.MethodGet, "/test", nil)
 	req.Header.Set("Authorization", "Bearer token2")
+
 	resp = httptest.NewRecorder()
 	r.ServeHTTP(resp, req)
 
@@ -113,8 +116,8 @@ func TestRateLimiterBurst(t *testing.T) {
 		c.String(http.StatusOK, "test")
 	})
 
-	for i := 0; i < 4; i++ {
-		req, _ := http.NewRequest("GET", "/test", nil)
+	for i := range 4 {
+		req, _ := http.NewRequest(http.MethodGet, "/test", nil)
 		resp := httptest.NewRecorder()
 		r.ServeHTTP(resp, req)
 
@@ -140,9 +143,10 @@ func TestRateLimiterRecovery(t *testing.T) {
 	})
 
 	// First request should succeed
-	req, _ := http.NewRequest("GET", "/test", nil)
+	req, _ := http.NewRequest(http.MethodGet, "/test", nil)
 	resp := httptest.NewRecorder()
 	r.ServeHTTP(resp, req)
+
 	if resp.Code != http.StatusOK {
 		t.Errorf("Expected status %d, got %d", http.StatusOK, resp.Code)
 	}
@@ -150,6 +154,7 @@ func TestRateLimiterRecovery(t *testing.T) {
 	// Second request should fail
 	resp = httptest.NewRecorder()
 	r.ServeHTTP(resp, req)
+
 	if resp.Code != http.StatusTooManyRequests {
 		t.Errorf("Expected status %d, got %d", http.StatusTooManyRequests, resp.Code)
 	}
@@ -160,6 +165,7 @@ func TestRateLimiterRecovery(t *testing.T) {
 	// Third request should succeed
 	resp = httptest.NewRecorder()
 	r.ServeHTTP(resp, req)
+
 	if resp.Code != http.StatusOK {
 		t.Errorf("Expected status %d, got %d", http.StatusOK, resp.Code)
 	}

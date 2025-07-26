@@ -7,21 +7,21 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/gin-gonic/gin"
 	"github.com/nicobistolfi/go-rest-api/internal/api"
 	"github.com/nicobistolfi/go-rest-api/internal/config"
-
-	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
-
 	logger "github.com/nicobistolfi/go-rest-api/pkg"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAPIEndpoints(t *testing.T) {
 	// Setup the router
 	cfg, err := config.LoadConfig()
-	assert.NoError(t, err, "Failed to load configuration")
+	require.NoError(t, err, "Failed to load configuration")
 
 	logger.Init()
+
 	r := gin.New()
 	api.SetupRouter(r, cfg, logger.Log)
 
@@ -48,20 +48,25 @@ func TestAPIEndpoints(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Make a request to the test server
-			resp, err := http.Get(server.URL + tc.endpoint)
-			assert.NoError(t, err, "Failed to make request")
-			defer resp.Body.Close()
+			resp, reqErr := http.Get(server.URL + tc.endpoint)
+			require.NoError(t, reqErr, "Failed to make request")
+
+			defer func() {
+				if closeErr := resp.Body.Close(); closeErr != nil {
+					t.Logf("Failed to close response body: %v", closeErr)
+				}
+			}()
 
 			// Check status code
 			assert.Equal(t, tc.expectedStatus, resp.StatusCode, "Unexpected status code")
 
 			// Read and parse the response body
-			body, err := io.ReadAll(resp.Body)
-			assert.NoError(t, err, "Failed to read response body")
+			body, readErr := io.ReadAll(resp.Body)
+			require.NoError(t, readErr, "Failed to read response body")
 
 			var responseBody map[string]string
-			err = json.Unmarshal(body, &responseBody)
-			assert.NoError(t, err, "Failed to parse response body")
+			parseErr := json.Unmarshal(body, &responseBody)
+			require.NoError(t, parseErr, "Failed to parse response body")
 
 			// Check response body
 			assert.Equal(t, tc.expectedBody, responseBody, "Unexpected response body")

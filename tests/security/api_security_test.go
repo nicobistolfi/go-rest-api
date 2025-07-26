@@ -7,20 +7,21 @@ import (
 	"os"
 	"testing"
 
+	"github.com/gin-gonic/gin"
 	"github.com/nicobistolfi/go-rest-api/internal/api"
 	"github.com/nicobistolfi/go-rest-api/internal/config"
-
-	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
-
 	logger "github.com/nicobistolfi/go-rest-api/pkg"
+	"github.com/stretchr/testify/assert"
 )
 
 func setupRouter() *gin.Engine {
 	cfg, _ := config.LoadConfig()
+
 	logger.Init()
+
 	r := gin.New()
 	api.SetupRouter(r, cfg, logger.Log)
+
 	return r
 }
 
@@ -28,10 +29,12 @@ func TestAPISecurityEndpoints(t *testing.T) {
 	// Setup mock token server
 	mockTokenServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Authorization") == "valid_token" {
-			err := json.NewEncoder(w).Encode(map[string]string{"id": "123", "email": "test@example.com", "name": "Test User"})
+			testUser := map[string]string{"id": "123", "email": "test@example.com", "name": "Test User"}
+			err := json.NewEncoder(w).Encode(testUser)
 			if err != nil {
 				t.Errorf("Failed to encode JSON response: %v", err)
 				w.WriteHeader(http.StatusInternalServerError)
+
 				return
 			}
 		} else {
@@ -66,6 +69,7 @@ func TestAPISecurityEndpoints(t *testing.T) {
 			if tc.token != "" {
 				req.Header.Set("Authorization", tc.token)
 			}
+
 			w := httptest.NewRecorder()
 			router.ServeHTTP(w, req)
 
