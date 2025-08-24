@@ -11,6 +11,6 @@
   "description": "",
   "devDependencies": {
     "serverless-go-plugin": "^2.4.1",
-    "serverless-offline": "^13.8.0"
+    "serverless-offline": "^13.8.2"
   }
 }
